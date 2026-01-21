@@ -66,3 +66,15 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
+**Links to documentation for Ease of Access: **
+* [MatEnsamble Dependency](https://github.com/BagchiS6/AutoPF)
+* [Slurm Documentation]()
+* [Flux Documentation](https://flux-framework.readthedocs.io/en/latest/guides/learning_guide.html)
+* [Python Flux Guide](https://flux-framework.readthedocs.io/projects/flux-core/en/latest/guide/start.html)
+* [Baseline Super-Computer User Guide](https://docs.cades.olcf.ornl.gov/baseline_user_guide/baseline_user_guide.html)
+* [Frontier Super-Computer User Guide](https://docs.olcf.ornl.gov/systems/frontier_user_guide.html#slurm)
+* [Open MPI Documentation (Message Passing Interface)](https://www.open-mpi.org/)
+* [LAMMPS Documentation](https://docs.lammps.org/Manual.html)
+
+
+
