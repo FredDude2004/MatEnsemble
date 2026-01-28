@@ -197,7 +197,7 @@ class SuperFluxManager:
                 if len(self.pending_tasks) == 0 and len(self.running_tasks) == 0:
                     finalize_progress(logging.getLogger("matensemble"))
                     self.logger.info(
-                        "=============EXITING WORKFLOW ENVIRONMENT===================="
+                        "============= EXITING WORKFLOW ENVIRONMENT ============="
                     )
                     break
                 """=================================================================================

@@ -113,7 +113,7 @@ def setup_logger(
     logger.propagate = False
     Path(log_dir).mkdir(parents=True, exist_ok=True)
 
-    time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    time_stamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
     logfile = Path(log_dir) / f"{package_name}_{time_stamp}.log"
 
     # File formatter (UTC timestamps)

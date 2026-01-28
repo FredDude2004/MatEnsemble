@@ -1,0 +1,31 @@
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 305 380163 Task 8 exited with ERROR CODE 136
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 314 380163 ======COMPLETED JOBS=======RUNNING JOBS======PENDING JOBS
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 315 380163 ======1============9============0
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 305 380163 Task 4 exited with ERROR CODE 136
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 314 380163 ======COMPLETED JOBS=======RUNNING JOBS======PENDING JOBS
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 315 380163 ======2============8============0
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 305 380163 Task 5 exited with ERROR CODE 136
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 314 380163 ======COMPLETED JOBS=======RUNNING JOBS======PENDING JOBS
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 315 380163 ======3============7============0
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 305 380163 Task 7 exited with ERROR CODE 136
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 314 380163 ======COMPLETED JOBS=======RUNNING JOBS======PENDING JOBS
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 315 380163 ======4============6============0
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 305 380163 Task 1 exited with ERROR CODE 136
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 314 380163 ======COMPLETED JOBS=======RUNNING JOBS======PENDING JOBS
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 315 380163 ======5============5============0
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 305 380163 Task 3 exited with ERROR CODE 136
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 314 380163 ======COMPLETED JOBS=======RUNNING JOBS======PENDING JOBS
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 315 380163 ======6============4============0
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 305 380163 Task 2 exited with ERROR CODE 136
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 314 380163 ======COMPLETED JOBS=======RUNNING JOBS======PENDING JOBS
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 315 380163 ======7============3============0
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 305 380163 Task 6 exited with ERROR CODE 136
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 314 380163 ======COMPLETED JOBS=======RUNNING JOBS======PENDING JOBS
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 315 380163 ======8============2============0
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 305 380163 Task 0 exited with ERROR CODE 136
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 314 380163 ======COMPLETED JOBS=======RUNNING JOBS======PENDING JOBS
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 315 380163 ======9============1============0
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 305 380163 Task 9 exited with ERROR CODE 136
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 314 380163 ======COMPLETED JOBS=======RUNNING JOBS======PENDING JOBS
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 315 380163 ======10============0============0
+matensemble.matfluxGen 2026-01-27T15:08:27Z INFO matfluxGen.py 194 380163 =============EXITING WORKFLOW ENVIRONMENT====================
