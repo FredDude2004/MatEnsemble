@@ -188,9 +188,7 @@ class SuperFluxManager:
             ### Queue Manager ###
 
             while True:
-                """=================================================================================
-                Stopping criteria 
-                """
+                # ===== STOPPING CRITERIA =====
                 if len(self.pending_tasks) == 0 and len(self.running_tasks) == 0:
                     # 9
                     finalize_progress(logging.getLogger("matensemble"))
@@ -198,15 +196,16 @@ class SuperFluxManager:
                         "============= EXITING WORKFLOW ENVIRONMENT ============="
                     )
                     break
-                """=================================================================================
-                """
+                # =============================
 
                 # self.logger.info("=============INITIALIZING WORKFLOW ENVIRONMENT====================")
 
                 if len(self.pending_tasks) > 0:
                     self.check_resources()
 
-                    self.flux_handle.rpc("resource.drain", {"targets": "0"}).get()
+                    self.flux_handle.rpc(
+                        "resource.drain", {"targets": "0"}
+                    ).get()  # preparing node stoping sending new jobs
                     if self.gpus_per_task > 0:
                         self.check_resources()
                         self.logger.progress(

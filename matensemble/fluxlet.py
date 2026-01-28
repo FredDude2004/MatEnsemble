@@ -22,7 +22,6 @@ class Fluxlet:
         set_cpu_affinity=True,
         set_mpi=None,
     ):
-
         launch_dir = os.getcwd()
         cmd_list = command.split(" ")
 
@@ -97,7 +96,6 @@ class Fluxlet:
         set_cpu_affinity=True,
         set_mpi=None,
     ):
-
         self.nnodes = nnodes
         self.gpus_per_node = gpus_per_node
         os.environ["SLURM_GPUS_PER_NODE"] = str(self.gpus_per_node)
@@ -131,7 +129,6 @@ class Fluxlet:
         os.chdir(self.launch_dir)
 
     def build_task_command(self, command, task, task_args, task_directory=None):
-
         self.launch_dir = os.getcwd()
         cmd_list = command.split(" ")
 

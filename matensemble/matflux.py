@@ -132,8 +132,8 @@ class SuperFluxManager:
                         running=len(self.running_tasks),
                         pending=len(self.pending_tasks),
                         failed=len(self.failed_tasks),
-                        free_cores=getattr(self, "free_cores", None),
-                        free_gpus=getattr(self, "free_gpus", None),
+                        free_cores=getattr(self, "free_cores", 0),
+                        free_gpus=getattr(self, "free_gpus", 0),
                     )
                 )
             except Exception as e:
@@ -166,8 +166,8 @@ class SuperFluxManager:
                     running=len(self.running_tasks),
                     pending=len(self.pending_tasks),
                     failed=len(self.failed_tasks),
-                    free_cores=getattr(self, "free_cores", None),
-                    free_gpus=getattr(self, "free_gpus", None),
+                    free_cores=getattr(self, "free_cores", 0),
+                    free_gpus=getattr(self, "free_gpus", 0),
                 )
             )
 
@@ -209,6 +209,7 @@ class SuperFluxManager:
                     self.check_resources()
 
                     self.flux_handle.rpc("resource.drain", {"targets": "0"}).get()
+                    # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv GPU TASKS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv #
                     if self.gpus_per_task > 0:
                         self.logger.progress(
                             format_status(
@@ -216,8 +217,8 @@ class SuperFluxManager:
                                 running=len(self.running_tasks),
                                 pending=len(self.pending_tasks),
                                 failed=len(self.failed_tasks),
-                                free_cores=getattr(self, "free_cores", None),
-                                free_gpus=getattr(self, "free_gpus", None),
+                                free_cores=getattr(self, "free_cores", 0),
+                                free_gpus=getattr(self, "free_gpus", 0),
                             )
                         )
 
@@ -235,8 +236,8 @@ class SuperFluxManager:
                                     running=len(self.running_tasks),
                                     pending=len(self.pending_tasks),
                                     failed=len(self.failed_tasks),
-                                    free_cores=getattr(self, "free_cores", None),
-                                    free_gpus=getattr(self, "free_gpus", None),
+                                    free_cores=getattr(self, "free_cores", 0),
+                                    free_gpus=getattr(self, "free_gpus", 0),
                                 )
                             )
                             cur_task = self.pending_tasks[0]
@@ -274,13 +275,14 @@ class SuperFluxManager:
                                     running=len(self.running_tasks),
                                     pending=len(self.pending_tasks),
                                     failed=len(self.failed_tasks),
-                                    free_cores=getattr(self, "free_cores", None),
-                                    free_gpus=getattr(self, "free_gpus", None),
+                                    free_cores=getattr(self, "free_cores", 0),
+                                    free_gpus=getattr(self, "free_gpus", 0),
                                 )
                             )
                             time.sleep(buffer_time)
                             # self.update_resources()
-
+                    # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ GPU TASKS ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #
+                    # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv CPU ONLY TASKS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv #
                     else:
                         self.logger.progress(
                             format_status(
@@ -288,8 +290,8 @@ class SuperFluxManager:
                                 running=len(self.running_tasks),
                                 pending=len(self.pending_tasks),
                                 failed=len(self.failed_tasks),
-                                free_cores=getattr(self, "free_cores", None),
-                                free_gpus=getattr(self, "free_gpus", None),
+                                free_cores=getattr(self, "free_cores", 0),
+                                free_gpus=getattr(self, "free_gpus", 0),
                             )
                         )
                         while (
@@ -303,13 +305,12 @@ class SuperFluxManager:
                                     running=len(self.running_tasks),
                                     pending=len(self.pending_tasks),
                                     failed=len(self.failed_tasks),
-                                    free_cores=getattr(self, "free_cores", None),
-                                    free_gpus=getattr(self, "free_gpus", None),
+                                    free_cores=getattr(self, "free_cores", 0),
+                                    free_gpus=getattr(self, "free_gpus", 0),
                                 )
                             )
 
                             cur_task = self.pending_tasks[0]
-
                             cur_task_args = gen_task_arg_list[0]
                             _ = self._pending_tasks.pop(0)
                             _ = gen_task_arg_list.pop(0)
@@ -360,14 +361,15 @@ class SuperFluxManager:
                                     running=len(self.running_tasks),
                                     pending=len(self.pending_tasks),
                                     failed=len(self.failed_tasks),
-                                    free_cores=getattr(self, "free_cores", None),
-                                    free_gpus=getattr(self, "free_gpus", None),
+                                    free_cores=getattr(self, "free_cores", 0),
+                                    free_gpus=getattr(self, "free_gpus", 0),
                                 )
                             )
                             time.sleep(buffer_time)
                             # self.update_resources()
 
                 # self.process_futures(buffer_time)
+                # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ CPU ONLY TASKS ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #
 
                 done, self.futures = concurrent.futures.wait(
                     self.futures, timeout=buffer_time
@@ -399,8 +401,8 @@ class SuperFluxManager:
                                 running=len(self.running_tasks),
                                 pending=len(self.pending_tasks),
                                 failed=len(self.failed_tasks),
-                                free_cores=getattr(self, "free_cores", None),
-                                free_gpus=getattr(self, "free_gpus", None),
+                                free_cores=getattr(self, "free_cores", 0),
+                                free_gpus=getattr(self, "free_gpus", 0),
                             )
                         )
                         if (
@@ -408,12 +410,12 @@ class SuperFluxManager:
                             and len(self.pending_tasks)
                         ):
                             cur_task = self.pending_tasks[0]
-
                             cur_task_args = gen_task_arg_list[0]
+
                             _ = self._pending_tasks.pop(0)
                             _ = gen_task_arg_list.pop(0)
 
-                            if gen_task_dir_list != None:
+                            if gen_task_dir_list is not None:
                                 cur_task_dir = gen_task_dir_list[0]
                                 _ = gen_task_dir_list.pop(0)
                             else:
@@ -443,8 +445,8 @@ class SuperFluxManager:
                                     running=len(self.running_tasks),
                                     pending=len(self.pending_tasks),
                                     failed=len(self.failed_tasks),
-                                    free_cores=getattr(self, "free_cores", None),
-                                    free_gpus=getattr(self, "free_gpus", None),
+                                    free_cores=getattr(self, "free_cores", 0),
+                                    free_gpus=getattr(self, "free_gpus", 0),
                                 )
                             )
 
@@ -472,85 +474,10 @@ class SuperFluxManager:
                             running=len(self.running_tasks),
                             pending=len(self.pending_tasks),
                             failed=len(self.failed_tasks),
-                            free_cores=getattr(self, "free_cores", None),
-                            free_gpus=getattr(self, "free_gpus", None),
+                            free_cores=getattr(
+                                self,
+                                "free_cores",
+                            ),
+                            free_gpus=getattr(self, "free_gpus", 0),
                         )
                     )
-
-
-# class Fluxlet():
-
-#     def __init__(self, handle, tasks_per_job, cores_per_task, gpus_per_task):
-
-#         self.flux_handle = handle
-#         self.future = []
-#         self.tasks_per_job = tasks_per_job
-#         self.cores_per_task = cores_per_task
-#         self.gpus_per_task = gpus_per_task
-
-#     def job_submit(self, executor, command, task, task_args, task_directory=None):
-
-#         launch_dir = os.getcwd()
-#         cmd_list = [] #['flux', 'run', '-n', str(self.tasks_per_job), '-c', str(self.cores_per_task),'-g', str(self.gpus_per_task)]
-#         cmd_list.extend(command.split(" "))
-#         # print (cmd_list)
-# #        cmd_list.append(os.path.abspath(command))
-
-#         if task_directory != None:
-
-#             try:
-#                 os.chdir(os.path.abspath(task_directory))
-#             except:
-#                 msg = f"Could not find task directory {task_directory}: So, creating one instead . . ."
-#                 print (msg)
-#                 # self.logger.info
-#                 os.mkdir(os.path.abspath(task_directory))
-#                 os.chdir(task_directory)
-#         else:
-#             msg = "No directories are specified for the task. Task-list will serve as directory tree."
-#             print (msg)
-
-#             try:
-#                 os.chdir(str(task))
-#             except:
-#                 os.mkdir(str(task))
-#                 os.chdir(str(task))
-
-#         # print (task_args)
-#         # task_args = task_directory+'/'+task_args
-#         print (os.getcwd())
-#         if type(task_args) is list:
-#             str_args = [str(arg) for arg in task_args]
-#         elif type(task_args) is None:
-#             pass
-#         elif type(task_args) is str or type(task_args) is int or type(task_args) is float or type(task_args) is np.int64 or type(task_args) is np.float64 or type(task_args) is dict:
-#             str_args = [str(task_args)]
-#         else:
-#             raise(f"ERROR: Task argument can not be {type(task_args)}. Currently supports `list`, `str`, `int` and `float` types")
-
-
-#         cmd_list.extend(str_args)
-# #        print (cmd_list)
-
-# #        jobspec = flux.job.JobspecV1.from_nest_command(cmd_list,num_slots=self.tasks_per_job, \
-# #                                                       cores_per_slot=self.cores_per_task, \
-# #                                                       gpus_per_slot=self.gpus_per_task)
-
-#         #num_nodes=1,exclusive=True)
-#         jobspec = flux.job.JobspecV1.from_command(cmd_list,num_tasks=self.tasks_per_job, \
-#                                                        cores_per_task=self.cores_per_task, \
-#                                                        gpus_per_task=self.gpus_per_task) #, \
-#                                                        # num_nodes=1,exclusive=True)
-
-#         jobspec.cwd = os.getcwd()
-#         jobspec.setattr_shell_option("mpi","pmi2")
-#         jobspec.setattr_shell_option("cpu-affinity","per-task")
-#         jobspec.setattr_shell_option("gpu-affinity","per-task")
-# #        jobspec.setattr_shell_option("pmi","simple")
-#         jobspec.environment = dict(os.environ)
-#         jobspec.stdout = os.getcwd() + '/stdout'
-#         jobspec.stderr = os.getcwd() + '/stderr'
-
-#         self.future = executor.submit(jobspec)
-#         self.future.task_= task
-#         os.chdir(launch_dir)
