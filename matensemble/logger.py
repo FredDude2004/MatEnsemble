@@ -130,7 +130,7 @@ def setup_logger(
     logger.addHandler(fh)
 
     if interactive is None:
-        interactive = is_interactive(sys.stdout) and is_interactive(sys.stderr)
+        interactive = is_interactive(sys.stdout)
 
     if interactive:
         # In-place status line (stdout)
