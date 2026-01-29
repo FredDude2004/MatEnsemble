@@ -18,8 +18,13 @@ import sys
 import os
 
 from matensemble.logger import setup_logger, format_status, finalize_progress
-from collections import deque
+from matensemble.strategy.not_adaptive_strategy import NonAdaptiveStrategy
+from matensemble.strategy.cpu_affine_strategy import CPUAffineStrategy
+from matensemble.strategy.gpu_affine_strategy import GPUAffineStrategy
+from matensemble.strategy.adaptive_strategy import AdaptiveStrategy
+from matensemble.strategy.dynopro_strategy import DynoproStrategy
 from matensemble.fluxlet import Fluxlet
+from collections import deque
 
 __author__ = ["Soumendu Bagchi", "Kaleb Duchesneau"]
 __package__ = "matensemble"
@@ -69,7 +74,7 @@ class SuperFluxManager:
         self.logger = logging.getLogger("matensemble")
         self.load_restart(restart_filename)
 
-    # HACK: This is a little funky needs some cleaning
+    # HACK: make sure this is consistent with what create_restart_file() produces
     # TODO: Need to implement this and make sure that the data is correct
     # def load_restart(self, filename): here is the actual function signature
     def load_restart(self, filename):
@@ -97,6 +102,21 @@ class SuperFluxManager:
     #         except Exception as e:
     #             self.logger.warning("%s", e)
 
+    # HACK: Make sure this is consistent with what a load_restart() expects
+    # TODO: Implement this,
+    def create_restart_file(self):
+        pass
+        # self.task_log = {
+        #     "Completed tasks": self.completed_tasks,
+        #     "Running tasks": self.running_tasks,
+        #     "Pending tasks": self.pending_tasks,
+        #     "Failed tasks": self.failed_tasks,
+        # }
+        # pickle.dump(
+        #     self.task_log,
+        #     open(f"restart_{len(self.completed_tasks)}.dat", "wb"),
+        # )
+
     def check_resources(self) -> None:
         self.status = flux.resource.status.ResourceStatusRPC(self.flux_handle).get()
         self.resource_list = flux.resource.list.resource_list(self.flux_handle).get()
@@ -105,47 +125,18 @@ class SuperFluxManager:
         self.free_cores = self.resource.free.ncores
         self.free_excess_cores = self.free_cores - self.free_gpus
 
-    # TODO: Implement this, move method to logger somehow or just call it here
+    # HACK: move method to logger somehow or just call it here
+    # TODO: Implement this,
     def log_progress(self) -> None:
         pass
 
-    # HACK: There is probably a better way to do this
-    # TODO: Make read through this make sure it works, make sure pickled
-    #       objects are always the same format (dict or tuple)
-    # def process_futures(self, buffer_time):
-    def process_futures(self, buffer_time) -> None:
-        pass
-        # done, self.futures = concurrent.futures.wait(self.futures, timeout=buffer_time)
-        # for fut in done:
-        #     self._completed_tasks.append(fut.task_)
-        #
-        #     if len(self.completed_tasks) % self.ml_task_freq == 0:
-        #         pickle.dump(
-        #             (self.completed_tasks, self.pending_tasks),
-        #             open(f"restart_{len(self.completed_tasks)}.dat", "wb"),
-        #         )
-        #     try:
-        #         if fut.result() != 0:
-        #             self.logger.info(
-        #                 f"Task {fut.task_} exited with ERROR CODE {fut.result()}"
-        #             )
-        #         self._running_tasks.remove(fut.task_)
-        #     except Exception as e:
-        #         self.logger.info("%s", e)
-        #
-        #     self.logger.progress(
-        #         format_status(
-        #             completed=len(self.completed_tasks),
-        #             running=len(self.running_tasks),
-        #             pending=len(self.pending_tasks),
-        #             failed=len(self.failed_tasks),
-        #             free_cores=getattr(self, "free_cores", None),
-        #             free_gpus=getattr(self, "free_gpus", None),
-        #         )
-        #     )
-
     def poolexecutor(
-        self, task_arg_list, buffer_time=0.5, task_dir_list=None, adaptive=True
+        self,
+        task_arg_list,
+        buffer_time=0.5,
+        task_dir_list=None,
+        adaptive=True,
+        dynopro=False,
     ) -> None:
         """
         High-throughput executor implementation
@@ -160,14 +151,40 @@ class SuperFluxManager:
 
         """
 
-        # TODO: Strategy would be initalized here and used in super loop
-
         # use double ended queue and  popleft for O(1) time complexity
         gen_task_arg_list = deque(copy.copy(task_arg_list))
         gen_task_dir_list = deque(copy.copy(task_dir_list)) if task_dir_list else None
 
+        # Initialize submission strategy based on params at run-time
+        if dynopro:
+            submission_strategy = DynoproStrategy(self)
+        elif self.gpus_per_task > 0:
+            submission_strategy = GPUAffineStrategy(self)
+        else:
+            submission_strategy = CPUAffineStrategy(self)
+
+        if adaptive:
+            future_processing_strategy = AdaptiveStrategy(
+                self, gen_task_arg_list, gen_task_dir_list
+            )
+        else:
+            future_processing_strategy = NonAdaptiveStrategy(self)
+
         done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
         while not done:
-            pass
+            self.check_resources()
+            self.log_progress()
 
-        return None
+            submission_strategy.submit_until_ooresources(
+                gen_task_arg_list, gen_task_dir_list, buffer_time
+            )
+            future_processing_strategy.process_futures(buffer_time)
+
+            self.check_resources()
+            self.log_progress()
+
+            if len(self.completed_tasks) % self.write_restart_freq == 0:
+                # TODO: implement create_restart_file() method
+                self.create_restart_file()
+
+            done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0

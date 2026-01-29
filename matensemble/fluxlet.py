@@ -1,8 +1,10 @@
-import os
 import numpy as np
 import flux.job
+import os
 
 
+# HACK: Remove any global side effects if possible, but test first refactor first
+# TODO: Clean this up
 class Fluxlet:
     def __init__(self, handle, tasks_per_job, cores_per_task, gpus_per_task):
         self.flux_handle = handle
@@ -80,7 +82,8 @@ class Fluxlet:
 
         self.resources = getattr(jobspec, "resources", None)
         self.future = executor.submit(jobspec)
-        self.future.task_ = task
+        self.future.task = task
+        self.future.job_spec = jobspec
         os.chdir(launch_dir)
 
     def hetero_job_submit(
@@ -125,7 +128,8 @@ class Fluxlet:
 
         self.resources = getattr(jobspec, "resources", None)
         self.future = executor.submit(jobspec)
-        self.future.task_ = task
+        self.future.task = task
+        self.future.job_spec = jobspec
         os.chdir(self.launch_dir)
 
     def build_task_command(self, command, task, task_args, task_directory=None):
