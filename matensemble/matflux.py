@@ -108,6 +108,7 @@ class SuperFluxManager:
         self.status = flux.resource.status.ResourceStatusRPC(self.flux_handle).get()
         # self.resource_list=flux.resource.list.resource_list(self.flux_handle).get()
         self.resource = flux.resource.list.resource_list(self.flux_handle).get()
+
         self.free_gpus = self.resource.free.ngpus
         self.free_cores = self.resource.free.ncores
         self.free_excess_cores = self.free_cores - self.free_gpus

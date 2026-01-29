@@ -18,6 +18,7 @@ import sys
 import os
 
 from matensemble.logger import setup_logger, format_status, finalize_progress
+from collections import deque
 from matensemble.fluxlet import Fluxlet
 
 __author__ = ["Soumendu Bagchi", "Kaleb Duchesneau"]
@@ -36,12 +37,15 @@ class SuperFluxManager:
         cores_per_task=1,
         gpus_per_task=0,
         cores_per_ml_task=1,
+        nnodes=None,
+        gpus_per_node=None,
         restart_filename=None,
     ) -> None:
-        self.running_tasks = []
+        self.pending_tasks = deque(copy.copy(gen_task_list))
+        self.running_tasks = deque()
         self.completed_tasks = []
-        self.pending_tasks = copy.copy(gen_task_list)
         self.failed_tasks = []
+
         self.flux_handle = flux.Flux()
 
         self.futures = set()
@@ -53,6 +57,8 @@ class SuperFluxManager:
         self.cores_per_task = cores_per_task
         self.gpus_per_task = gpus_per_task
         self.cores_per_ml_task = cores_per_ml_task
+        self.nnodes = nnodes
+        self.gpus_per_node = gpus_per_node
 
         self.gen_task_cmd = gen_task_cmd
         self.ml_task_cmd = ml_task_cmd
@@ -63,11 +69,12 @@ class SuperFluxManager:
         self.logger = logging.getLogger("matensemble")
         self.load_restart(restart_filename)
 
-    # HACK: This is a little funky needs some cleaning 
-    # TODO: Need to implement this and make sure that the data is correct 
+    # HACK: This is a little funky needs some cleaning
+    # TODO: Need to implement this and make sure that the data is correct
     # def load_restart(self, filename): here is the actual function signature
-    def load_restart(self""", filename"""):
+    def load_restart(self, filename):
         pass
+
     #     if (filename is not None) and os.path.isfile(filename):
     #         try:
     #             self.completed_tasks, self.pending_tasks = pickle.load(
@@ -90,13 +97,6 @@ class SuperFluxManager:
     #         except Exception as e:
     #             self.logger.warning("%s", e)
 
-    def update_resources(self, curr_num_tasks) -> None:
-        self.free_excess_cores -= self.cores_per_task * curr_num_tasks
-        self.free_cores -= self.cores_per_task * curr_num_tasks
-
-        if self.gpus_per_task is not None:
-            self.free_gpus -= self.gpus_per_task * curr_num_tasks
-
     def check_resources(self) -> None:
         self.status = flux.resource.status.ResourceStatusRPC(self.flux_handle).get()
         self.resource_list = flux.resource.list.resource_list(self.flux_handle).get()
@@ -105,11 +105,16 @@ class SuperFluxManager:
         self.free_cores = self.resource.free.ncores
         self.free_excess_cores = self.free_cores - self.free_gpus
 
+    # TODO: Implement this, move method to logger somehow or just call it here
+    def log_progress(self) -> None:
+        pass
+
     # HACK: There is probably a better way to do this
-    # TODO: Make read through this make sure it works, make sure pickled 
+    # TODO: Make read through this make sure it works, make sure pickled
     #       objects are always the same format (dict or tuple)
     # def process_futures(self, buffer_time):
-    def process_futures(self""", buffer_time""") -> None:
+    def process_futures(self, buffer_time) -> None:
+        pass
         # done, self.futures = concurrent.futures.wait(self.futures, timeout=buffer_time)
         # for fut in done:
         #     self._completed_tasks.append(fut.task_)
@@ -139,9 +144,10 @@ class SuperFluxManager:
         #         )
         #     )
 
-
-    def poolexecutor(self, task_arg_list, buffer_time=0.5, task_dir_list=None, adaptive=True) -> None:
-        """ 
+    def poolexecutor(
+        self, task_arg_list, buffer_time=0.5, task_dir_list=None, adaptive=True
+    ) -> None:
+        """
         High-throughput executor implementation
 
         Args:
@@ -150,13 +156,18 @@ class SuperFluxManager:
             ...
 
         Return:
-            <return_type>. description of return 
+            <return_type>. description of return
 
         """
 
         # TODO: Strategy would be initalized here and used in super loop
 
-        done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0 
+        # use double ended queue and  popleft for O(1) time complexity
+        gen_task_arg_list = deque(copy.copy(task_arg_list))
+        gen_task_dir_list = deque(copy.copy(task_dir_list)) if task_dir_list else None
+
+        done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
         while not done:
             pass
 
+        return None

@@ -233,7 +233,7 @@ class SuperFluxManager:
                             _ = self._pending_tasks.pop(0)
                             _ = gen_task_arg_list.pop(0)
 
-                            if gen_task_dir_list != None:
+                            if gen_task_dir_list is not None:
                                 cur_task_dir = gen_task_dir_list[0]
                                 _ = gen_task_dir_list.pop(0)
                             else:

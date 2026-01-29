@@ -14,7 +14,7 @@ So basically there are two main strategies and you need to look through the code
 
 This happens inside of the super loop which goes like this
 
-while you still have pending tasks and you still have running tasks
+* while you still have pending tasks and you still have running tasks
     * implement the submission strategy 
     * process futures 
     * update lists (futures_list, running_tasks, completed_tasks, pending_tasks, failed_tasks)
