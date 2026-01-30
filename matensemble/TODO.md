@@ -6,7 +6,7 @@
 
 - [x] Test matflux/matfluxGen refactor make sure it works before doing anything else
 - [ ] Fix problems and test again 
-    * Problems:
+    * Problems: ~/problems.txt
     - [ ] Use *ONE* executor in the manager super loop instead of spawning new ones each time
     - [ ] Make sure future objects have proper fields appended at creation (task_ or task + job_spec)
     - [ ] Move writing of restart files into the FutureProcessingStrategy implementations
