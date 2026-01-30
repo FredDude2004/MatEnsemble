@@ -1,9 +1,11 @@
 import concurrent.futures
+import numbers
 import flux
 import time
 
 from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
 from matensemble.fluxlet import Fluxlet
+from collections import deque
 
 
 class AdaptiveStrategy(FutureProcessingStrategy):
@@ -33,7 +35,12 @@ class AdaptiveStrategy(FutureProcessingStrategy):
         return fluxlet.future
 
     def adaptive_submit(self, buffer_time) -> None:
-        tasks_per_job = self.manager.tasks_per_job.popleft()
+        if self.manager.tasks_per_job:
+            tasks_per_job = 1  # default to one task per job if tasks_per_job is not set
+        elif isinstance(self.manager.tasks_per_job, numbers.Number):
+            tasks_per_job = int(self.manager.tasks_per_jobQ)
+        else:  # isinstance(self.manager.tasks_per_job, deque)
+            tasks_per_job = self.manager.tasks_per_job.popleft()
 
         if (
             self.task_arg_list is not None

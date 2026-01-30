@@ -1,3 +1,4 @@
+import numbers
 import time
 import flux
 
@@ -28,7 +29,13 @@ class CPUAffineStrategy(TaskSubmissionStrategy):
             None.
 
         """
-        tasks_per_job = self.manager.tasks_per_job.popleft()
+        if self.manager.tasks_per_job:
+            tasks_per_job = 1  # default to one task per job if tasks_per_job is not set
+        elif isinstance(self.manager.tasks_per_job, numbers.Number):
+            tasks_per_job = int(self.manager.tasks_per_jobQ)
+        else:  # isinstance(self.manager.tasks_per_job, deque)
+            tasks_per_job = self.manager.tasks_per_job.popleft()
+
         while (
             self.manager.free_cores >= tasks_per_job * self.manager.cores_per_task
             and len(self.manager.pending_tasks) > 0
