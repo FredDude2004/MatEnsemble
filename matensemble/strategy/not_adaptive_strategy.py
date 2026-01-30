@@ -1,11 +1,11 @@
 import concurrent.futures
 
 from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
-from matensemble.manager import SuperFluxManager
 
 
 class NonAdaptiveStrategy(FutureProcessingStrategy):
-    def __init__(self, manager: SuperFluxManager) -> None:
+    # TODO: potentially add back type annotation for manager
+    def __init__(self, manager) -> None:
         self.manager = manager
 
     def process_futures(self, buffer_time) -> None:
@@ -17,17 +17,19 @@ class NonAdaptiveStrategy(FutureProcessingStrategy):
                 exc = fut.exception(timeout=buffer_time)
                 if exc is not None:
                     self.manager.failed_tasks.append((fut.task, fut.job_spec))
-                    self.manager.logger.debug(
-                        f"Task {fut.task} failed with exception: {exc}"
-                    )
+                    # TODO:
+                    # self.manager.logger.debug(
+                    #     f"Task {fut.task} failed with exception: {exc}"
+                    # )
                     continue
 
                 res = fut.result(timeout=buffer_time)
                 if res != 0:
                     self.manager.failed_tasks.append((fut.task, fut.job_spec))
-                    self.manager.logger.debug(
-                        f"Task {fut.task} exited with ERROR CODE {res}"
-                    )
+                    # TODO:
+                    # self.manager.logger.debug(
+                    #     f"Task {fut.task} exited with ERROR CODE {res}"
+                    # )
                     continue
 
                 self.manager.completed_tasks.append(fut.task)

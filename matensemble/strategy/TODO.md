@@ -1,3 +1,5 @@
+- [ ] Add manager type annotation for all the strategies
+
 Here are the things that you need to do.
 
 So basically there are two main strategies and you need to look through the code to see what the common patterns between those two strategies are. They basically look like this 

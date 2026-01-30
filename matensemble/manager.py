@@ -38,11 +38,7 @@ class SuperFluxManager:
         self.flux_handle = flux.Flux()
 
         self.futures = set()
-        self.tasks_per_job = (
-            copy.copy(list(tasks_per_job))
-            if tasks_per_job is not None
-            else list([1] * len(self.pending_tasks))
-        )
+        self.tasks_per_job = tasks_per_job if tasks_per_job is not None else 1
         self.cores_per_task = cores_per_task
         self.gpus_per_task = gpus_per_task
         self.nnodes = nnodes
@@ -98,7 +94,17 @@ class SuperFluxManager:
     # HACK: move method to logger somehow or just call it here
     # TODO: Implement this,
     def log_progress(self) -> None:
-        pass
+        num_pending_tasks = len(self.pending_tasks)
+        num_running_tasks = len(self.running_tasks)
+        num_completed_tasks = len(self.completed_tasks)
+        num_failed_tasks = len(self.failed_tasks)
+        print(
+            f"TASKS === Pending tasks: {num_pending_tasks} | Running tasks: {num_running_tasks} | Completed tasks: {num_completed_tasks} | Failed tasks: {num_failed_tasks}"
+        )
+
+        print(
+            f"RESOURCES === Free Cores: {self.free_cores} | Free GPUs: {self.free_gpus}"
+        )
 
     def poolexecutor(
         self,

@@ -2,7 +2,6 @@ import time
 import flux
 
 from matensemble.strategy.submission_strategy_base import TaskSubmissionStrategy
-from matensemble.manager import SuperFluxManager
 from matensemble.fluxlet import Fluxlet
 
 
@@ -13,7 +12,8 @@ class DynoproStrategy(TaskSubmissionStrategy):
     based on the parameters given to it at run time
     """
 
-    def __init__(self, manager: SuperFluxManager) -> None:
+    # TODO: potentially add back type annotation for manager
+    def __init__(self, manager) -> None:
         self.manager = manager
 
     def submit_until_ooresources(
