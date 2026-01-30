@@ -1,3 +1,4 @@
+import numpy as np
 import flux.job
 import os.path
 import logging
@@ -45,7 +46,7 @@ class SuperFluxManager:
         # Use numbers.Real to catch everything castable to int (int, float, Decimal, etc.)
         elif isinstance(tasks_per_job, numbers.Real):
             self.tasks_per_job = deque([int(tasks_per_job)] * len(self.pending_tasks))
-        elif isinstance(tasks_per_job, list):
+        elif isinstance(tasks_per_job, (list, np.ndarray)):
             self.tasks_per_job = deque(copy.copy(tasks_per_job))
         else:
             raise TypeError("tasks_per_job must be a real number or a list of numbers")
