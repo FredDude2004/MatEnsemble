@@ -11,5 +11,7 @@ class TaskSubmissionStrategy(ABC):
         pass
 
     @abstractmethod
-    def submit(self, task, task_args, task_dir) -> flux.job.executor.FluxExecutorFuture:
+    def submit(
+        self, task, tasks_per_job, task_args, task_dir
+    ) -> flux.job.executor.FluxExecutorFuture:
         pass

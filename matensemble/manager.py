@@ -38,7 +38,11 @@ class SuperFluxManager:
         self.flux_handle = flux.Flux()
 
         self.futures = set()
-        self.tasks_per_job = tasks_per_job if tasks_per_job is not None else 1
+        self.tasks_per_job = (
+            deque(copy.copy(tasks_per_job))
+            if tasks_per_job is not None
+            else deque([1] * len(self.pending_tasks))
+        )
         self.cores_per_task = cores_per_task
         self.gpus_per_task = gpus_per_task
         self.nnodes = nnodes

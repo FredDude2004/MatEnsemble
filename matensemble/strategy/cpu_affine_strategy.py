@@ -28,9 +28,9 @@ class CPUAffineStrategy(TaskSubmissionStrategy):
             None.
 
         """
+        tasks_per_job = self.manager.tasks_per_job.popleft()
         while (
-            self.manager.free_cores
-            >= self.manager.tasks_per_job * self.manager.cores_per_task
+            self.manager.free_cores >= tasks_per_job * self.manager.cores_per_task
             and len(self.manager.pending_tasks) > 0
         ):
             self.manager.check_resources()
@@ -44,17 +44,21 @@ class CPUAffineStrategy(TaskSubmissionStrategy):
             else:
                 cur_task_dir = None
 
-            self.manager.futures.add(self.submit(cur_task, cur_task_args, cur_task_dir))
+            self.manager.futures.add(
+                self.submit(cur_task, tasks_per_job, cur_task_args, cur_task_dir)
+            )
             self.manager.running_tasks.append(cur_task)
 
             self.manager.check_resources()
             self.manager.log_progress()
             time.sleep(buffer_time)
 
-    def submit(self, task, task_args, task_dir) -> flux.job.executor.FluxExecutorFuture:
+    def submit(
+        self, task, tasks_per_job, task_args, task_dir
+    ) -> flux.job.executor.FluxExecutorFuture:
         fluxlet = Fluxlet(
             self.manager.flux_handle,
-            self.manager.tasks_per_job,
+            tasks_per_job,
             self.manager.cores_per_task,
             self.manager.gpus_per_task,
         )
