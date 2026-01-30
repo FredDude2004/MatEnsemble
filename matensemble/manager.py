@@ -144,6 +144,9 @@ class SuperFluxManager:
         gen_task_arg_list = deque(copy.copy(task_arg_list))
         gen_task_dir_list = deque(copy.copy(task_dir_list)) if task_dir_list else None
 
+        # prepare resources
+        self.flux_handle.rpc("resource.drain", {"targets": "0"}).get()
+
         # initialize submission strategy based on params at run-time
         if dynopro:
             submission_strategy = DynoproStrategy(self)
@@ -187,3 +190,5 @@ class SuperFluxManager:
                 self.create_restart_file()
 
             done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
+
+        # TODO: Log that you are finished here
