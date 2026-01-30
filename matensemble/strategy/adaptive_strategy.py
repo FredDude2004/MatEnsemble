@@ -1,5 +1,4 @@
 import concurrent.futures
-import numbers
 import flux
 import time
 
@@ -35,16 +34,10 @@ class AdaptiveStrategy(FutureProcessingStrategy):
         return fluxlet.future
 
     def adaptive_submit(self, buffer_time) -> None:
-        if self.manager.tasks_per_job:
-            tasks_per_job = 1  # default to one task per job if tasks_per_job is not set
-        elif isinstance(self.manager.tasks_per_job, numbers.Number):
-            tasks_per_job = int(self.manager.tasks_per_jobQ)
-        else:  # isinstance(self.manager.tasks_per_job, deque)
-            tasks_per_job = self.manager.tasks_per_job.popleft()
-
         if (
             self.task_arg_list is not None
-            and self.manager.free_cores >= tasks_per_job * self.manager.cores_per_task
+            and self.manager.free_cores
+            >= self.manager.tasks_per_job[0] * self.manager.cores_per_task
             and len(self.manager.pending_tasks)
         ):
             self.manager.check_resources()
@@ -59,12 +52,15 @@ class AdaptiveStrategy(FutureProcessingStrategy):
                 cur_task_dir = None
 
             self.manager.futures.add(
-                self.submit(cur_task, tasks_per_job, cur_task_args, cur_task_dir)
+                self.submit(
+                    cur_task, self.manager.tasks_per_job[0], cur_task_args, cur_task_dir
+                )
             )
             self.manager.running_tasks.append(cur_task)
 
             self.manager.check_resources()
             self.manager.log_progress()
+            self.manager.tasks_per_job.popleft()
             time.sleep(buffer_time)
 
     def process_futures(self, buffer_time) -> None:

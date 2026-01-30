@@ -1,6 +1,7 @@
 import flux.job
 import os.path
 import logging
+import numbers
 import pickle
 import flux
 import copy
@@ -38,11 +39,17 @@ class SuperFluxManager:
         self.flux_handle = flux.Flux()
 
         self.futures = set()
-        self.tasks_per_job = (
-            deque(copy.copy(tasks_per_job))
-            if tasks_per_job is not None
-            else deque([1] * len(self.pending_tasks))
-        )
+
+        if tasks_per_job is None:
+            self.tasks_per_job = deque([1] * len(self.pending_tasks))
+        # Use numbers.Real to catch everything castable to int (int, float, Decimal, etc.)
+        elif isinstance(tasks_per_job, numbers.Real):
+            self.tasks_per_job = deque([int(tasks_per_job)] * len(self.pending_tasks))
+        elif isinstance(tasks_per_job, list):
+            self.tasks_per_job = deque(copy.copy(tasks_per_job))
+        else:
+            raise TypeError("tasks_per_job must be a real number or a list of numbers")
+
         self.cores_per_task = cores_per_task
         self.gpus_per_task = gpus_per_task
         self.nnodes = nnodes
