@@ -30,7 +30,8 @@ class GPUAffineStrategy(TaskSubmissionStrategy):
         """
 
         while (
-            self.manager.free_cores
+            self.manager.tasks_per_job
+            and self.manager.free_cores
             >= self.manager.tasks_per_job[0] * self.manager.cores_per_task
             and self.manager.free_gpus
             >= self.manager.tasks_per_job[0] * self.manager.gpus_per_task

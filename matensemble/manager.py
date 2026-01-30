@@ -60,9 +60,10 @@ class SuperFluxManager:
         self.write_restart_freq = write_restart_freq
 
         # TODO: Make the logger actually work the way you want it to
-        # setup_logger("matensemble")
         # self.logger = logging.getLogger("matensemble")
         # self.load_restart(restart_filename)
+
+        self.setup_logger()
 
     # HACK: make sure this is consistent with what create_restart_file() produces
     # TODO: This probably doesn't work, it you will lose any jobs that were
@@ -103,6 +104,27 @@ class SuperFluxManager:
         self.free_cores = self.resource.free.ncores
         self.free_excess_cores = self.free_cores - self.free_gpus
 
+    def setup_logger(self):
+        self.logger = logging.getLogger(__name__)
+
+        stdoutHandler = logging.StreamHandler(stream=sys.stdout)
+        date_time_hash = str(datetime.now())
+        fileHandler = logging.FileHandler(f"logs-{date_time_hash}.txt")
+
+        Fmt = logging.Formatter(
+            "%(name)s %(asctime)s %(levelname)s %(filename)s %(lineno)s %(process)d %(message)s",
+            defaults={"levelname": "severity", "asctime": "timestamp"},
+            datefmt="%Y-%m-%dT%H:%M:%SZ",
+        )
+
+        stdoutHandler.setFormatter(Fmt)
+        fileHandler.setFormatter(Fmt)
+
+        self.logger.addHandler(stdoutHandler)
+        self.logger.addHandler(fileHandler)
+
+        self.logger.setLevel(logging.INFO)
+
     # HACK: move method to logger somehow or just call it here
     # TODO: Implement this,
     def log_progress(self) -> None:
@@ -110,11 +132,11 @@ class SuperFluxManager:
         num_running_tasks = len(self.running_tasks)
         num_completed_tasks = len(self.completed_tasks)
         num_failed_tasks = len(self.failed_tasks)
-        print(
-            f"TASKS === Pending tasks: {num_pending_tasks} | Running tasks: {num_running_tasks} | Completed tasks: {num_completed_tasks} | Failed tasks: {num_failed_tasks}"
+        self.logger.info(
+            f"TASKS     === Pending tasks: {num_pending_tasks} | Running tasks: {num_running_tasks} | Completed tasks: {num_completed_tasks} | Failed tasks: {num_failed_tasks}"
         )
 
-        print(
+        self.logger.info(
             f"RESOURCES === Free Cores: {self.free_cores} | Free GPUs: {self.free_gpus}"
         )
 

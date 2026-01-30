@@ -2,6 +2,7 @@ import concurrent.futures
 import flux
 import time
 
+from matensemble import manager
 from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
 from matensemble.fluxlet import Fluxlet
 from collections import deque
@@ -35,7 +36,8 @@ class AdaptiveStrategy(FutureProcessingStrategy):
 
     def adaptive_submit(self, buffer_time) -> None:
         if (
-            self.task_arg_list is not None
+            self.manager.tasks_per_job
+            and self.task_arg_list is not None
             and self.manager.free_cores
             >= self.manager.tasks_per_job[0] * self.manager.cores_per_task
             and len(self.manager.pending_tasks)
@@ -68,6 +70,7 @@ class AdaptiveStrategy(FutureProcessingStrategy):
             self.manager.futures, timeout=buffer_time
         )
         for fut in completed:
+            self.manager.running_tasks.popleft()
             try:
                 exc = fut.exception()
                 if exc is not None:
@@ -88,7 +91,6 @@ class AdaptiveStrategy(FutureProcessingStrategy):
                     continue
 
                 self.manager.completed_tasks.append(fut.task)
-                self.manager.running_tasks.remove(fut.task)
 
             except concurrent.futures.CancelledError as e:
                 print(f"Task was cancelled before it was completed: INFO {e}")

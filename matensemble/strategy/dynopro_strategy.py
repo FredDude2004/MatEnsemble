@@ -30,7 +30,8 @@ class DynoproStrategy(TaskSubmissionStrategy):
         """
 
         while (
-            self.manager.free_cores
+            self.manager.tasks_per_job
+            and self.manager.free_cores
             >= self.manager.tasks_per_job[0] * self.manager.cores_per_task
             and len(self.manager.pending_tasks) > 0
         ):
