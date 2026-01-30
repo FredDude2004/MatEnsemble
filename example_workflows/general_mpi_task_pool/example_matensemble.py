@@ -1,4 +1,4 @@
-from matensemble.matfluxGen import SuperFluxManager
+from matensemble.manager import SuperFluxManager
 import numpy as np
 import os
 
@@ -32,11 +32,10 @@ task_command = os.path.abspath(
 master = SuperFluxManager(
     task_list,
     task_command,
-    None,
+    write_restart_freq=5,
     tasks_per_job=56 * np.random.randint(1, 10, N_task),
     cores_per_task=1,
     gpus_per_task=0,
-    write_restart_freq=5,
 )
 
 
