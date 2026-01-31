@@ -95,5 +95,5 @@ class AdaptiveStrategy(FutureProcessingStrategy):
 
             self.adaptive_submit(buffer_time)
 
-            if len(self.manager.completed_tasks) % self.write_restart_freq == 0:
+            if len(self.manager.completed_tasks) % self.manager.write_restart_freq == 0:
                 self.manager.create_restart_file()

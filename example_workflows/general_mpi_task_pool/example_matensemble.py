@@ -1,12 +1,10 @@
-from matensemble.manager import SuperFluxManager
 import numpy as np
+import time
 import os
 
-__author__ = "Soumendu Bagchi"
+from matensemble.manager import SuperFluxManager
 
-# -----------------------
-# Consistent, deterministic test
-# -----------------------
+__author__ = "Soumendu Bagchi"
 
 N_task = 10
 
@@ -34,4 +32,9 @@ master = SuperFluxManager(
 task_arg_list = list(range(1, N_task + 1))
 
 # Run
+start_time = time.perf_counter()
 master.poolexecutor(task_arg_list=task_arg_list, buffer_time=1, task_dir_list=None)
+end_time = time.perf_counter()
+
+elapsed_time = end_time - start_time
+print(f"Workflow took {elapsed_time:.4f} seconds to run.")
