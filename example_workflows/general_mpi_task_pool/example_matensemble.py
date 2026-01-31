@@ -33,7 +33,7 @@ task_arg_list = list(range(1, N_task + 1))
 
 # Run
 start_time = time.perf_counter()
-master.poolexecutor(task_arg_list=task_arg_list, buffer_time=1, task_dir_list=None)
+master.poolexecutor(task_arg_list=task_arg_list, buffer_time=0.1, task_dir_list=None)
 end_time = time.perf_counter()
 
 elapsed_time = end_time - start_time
