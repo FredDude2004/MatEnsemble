@@ -51,7 +51,7 @@ class DynoproStrategy(TaskSubmissionStrategy):
                     cur_task, self.manager.tasks_per_job[0], cur_task_args, cur_task_dir
                 )
             )
-            self.manager.running_tasks.append(cur_task)
+            self.manager.running_tasks.add(cur_task)
 
             self.manager.check_resources()
             self.manager.log_progress()
@@ -72,7 +72,7 @@ class DynoproStrategy(TaskSubmissionStrategy):
             self.manager.gpus_per_task,
         )
         fluxlet.hetero_job_submit(
-            flux.job.FluxExecutor(),
+            self.manager.executor,
             nnodes=self.manager.nnodes,
             gpus_per_node=self.manager.gpus_per_node,
             command=self.manager.gen_task_cmd,

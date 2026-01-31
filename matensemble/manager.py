@@ -33,7 +33,7 @@ class SuperFluxManager:
         restart_filename=None,
     ) -> None:
         self.pending_tasks = deque(copy.copy(gen_task_list))
-        self.running_tasks = deque()
+        self.running_tasks = set()
         self.completed_tasks = []
         self.failed_tasks = []
 
@@ -72,7 +72,7 @@ class SuperFluxManager:
     def load_restart(self, filename):
         if (filename is not None) and os.path.isfile(filename):
             try:
-                task_log = pickle.load(open(filename, "rb")).values()
+                task_log = pickle.load(open(filename, "rb"))
                 self.completed_tasks = task_log["Completed tasks"]
                 self.running_tasks = task_log["Running tasks"]
                 self.pending_tasks = task_log["Pending tasks"]
@@ -168,9 +168,9 @@ class SuperFluxManager:
         gen_task_dir_list = deque(copy.copy(task_dir_list)) if task_dir_list else None
 
         # prepare resources
-        self.flux_handle.rpc("resource.drain", {"targets": "0"}).get()
 
         # initialize submission strategy based on params at run-time
+
         if dynopro:
             submission_strategy = DynoproStrategy(self)
         elif self.gpus_per_task > 0:
@@ -186,32 +186,37 @@ class SuperFluxManager:
         else:
             future_processing_strategy = NonAdaptiveStrategy(self)
 
-        """
-        Super loop: while you have jobs to run and/or running jobs
-            - submit jobs until you are out of resources 
-            - process running jobs 
-            - update resources
-            - create restart file if needed
-            - continue...
+        self.flux_handle.rpc("resource.drain", {"targets": "0"}).get()
+        with flux.job.FluxExecutor() as executor:
+            # set executor in manager so that strategies can use it
+            self.executor = executor
 
-        """
-        done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
-        while not done:
-            self.check_resources()
-            self.log_progress()
+            """
+            Super loop: while you have jobs to run and/or running jobs
+                - submit jobs until you are out of resources 
+                - process running jobs 
+                - update resources
+                - create restart file if needed
+                - continue...
 
-            submission_strategy.submit_until_ooresources(
-                gen_task_arg_list, gen_task_dir_list, buffer_time
-            )
-            future_processing_strategy.process_futures(buffer_time)
-
-            self.check_resources()
-            self.log_progress()
-
-            if len(self.completed_tasks) % self.write_restart_freq == 0:
-                # TODO: implement create_restart_file() method
-                self.create_restart_file()
-
+            """
             done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
+            while not done:
+                self.check_resources()
+                self.log_progress()
 
-        # TODO: Log that you are finished here
+                submission_strategy.submit_until_ooresources(
+                    gen_task_arg_list, gen_task_dir_list, buffer_time
+                )
+                future_processing_strategy.process_futures(buffer_time)
+
+                self.check_resources()
+                self.log_progress()
+
+                if len(self.completed_tasks) % self.write_restart_freq == 0:
+                    # TODO: implement create_restart_file() method
+                    self.create_restart_file()
+
+                done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
+
+            # TODO: Log that you are finished here

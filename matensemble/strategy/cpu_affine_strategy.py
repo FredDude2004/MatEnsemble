@@ -50,7 +50,7 @@ class CPUAffineStrategy(TaskSubmissionStrategy):
                     cur_task, self.manager.tasks_per_job[0], cur_task_args, cur_task_dir
                 )
             )
-            self.manager.running_tasks.append(cur_task)
+            self.manager.running_tasks.add(cur_task)
 
             self.manager.check_resources()
             self.manager.log_progress()
@@ -67,7 +67,7 @@ class CPUAffineStrategy(TaskSubmissionStrategy):
             self.manager.gpus_per_task,
         )
         fluxlet.job_submit(
-            flux.job.FluxExecutor(),
+            self.manager.executor,
             self.manager.gen_task_cmd,
             task,
             task_args,

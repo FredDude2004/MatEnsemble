@@ -2,10 +2,8 @@ import concurrent.futures
 import flux
 import time
 
-from matensemble import manager
 from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
 from matensemble.fluxlet import Fluxlet
-from collections import deque
 
 
 class AdaptiveStrategy(FutureProcessingStrategy):
@@ -25,7 +23,7 @@ class AdaptiveStrategy(FutureProcessingStrategy):
             self.manager.gpus_per_task,
         )
         fluxlet.job_submit(
-            flux.job.FluxExecutor(),
+            self.manager.executor,
             self.manager.gen_task_cmd,
             task,
             task_args,
@@ -58,7 +56,7 @@ class AdaptiveStrategy(FutureProcessingStrategy):
                     cur_task, self.manager.tasks_per_job[0], cur_task_args, cur_task_dir
                 )
             )
-            self.manager.running_tasks.append(cur_task)
+            self.manager.running_tasks.add(cur_task)
 
             self.manager.check_resources()
             self.manager.log_progress()
@@ -70,7 +68,7 @@ class AdaptiveStrategy(FutureProcessingStrategy):
             self.manager.futures, timeout=buffer_time
         )
         for fut in completed:
-            self.manager.running_tasks.popleft()
+            self.manager.running_tasks.remove(fut.task)
             try:
                 exc = fut.exception()
                 if exc is not None:
@@ -96,3 +94,6 @@ class AdaptiveStrategy(FutureProcessingStrategy):
                 print(f"Task was cancelled before it was completed: INFO {e}")
 
             self.adaptive_submit(buffer_time)
+
+            if len(self.manager.completed_tasks) % self.write_restart_freq == 0:
+                self.manager.create_restart_file()

@@ -82,8 +82,12 @@ class Fluxlet:
 
         self.resources = getattr(jobspec, "resources", None)
         self.future = executor.submit(jobspec)
+
+        # TODO: Make this only use the variables that are needed (task and jobspec)
+        self.future.task_ = task  # This is here for compatibility while testing
         self.future.task = task
         self.future.job_spec = jobspec
+
         os.chdir(launch_dir)
 
     def hetero_job_submit(
@@ -128,8 +132,12 @@ class Fluxlet:
 
         self.resources = getattr(jobspec, "resources", None)
         self.future = executor.submit(jobspec)
+
+        # TODO: Make this only use the variables that are needed (task and jobspec)
+        self.future.task_ = task  # This is here for compatibility while testing
         self.future.task = task
         self.future.job_spec = jobspec
+
         os.chdir(self.launch_dir)
 
     def build_task_command(self, command, task, task_args, task_directory=None):
