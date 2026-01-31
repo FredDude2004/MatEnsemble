@@ -202,7 +202,7 @@ class SuperFluxManager:
 
             """
             print("=== ENTERING WORKFLOW ENVIRONMENT ===")
-            start = time.time()
+            start = time.perf_counter()
             done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
             while not done:
                 self.check_resources()
@@ -216,6 +216,6 @@ class SuperFluxManager:
                 done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
 
             # TODO: Log that you are finished here
-            end = time.time()
+            end = time.perf_counter()
             print("=== EXITING WORKFLOW ENVIRONMENT ===")
-            print(f"Time Elapsed: {start - end}")
+            print(f"Workflow took {(start - end):.4f} seconds to run.")
