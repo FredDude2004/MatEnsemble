@@ -4,6 +4,7 @@ import os.path
 import logging
 import numbers
 import pickle
+import time
 import flux
 import copy
 import os
@@ -132,12 +133,12 @@ class SuperFluxManager:
         num_running_tasks = len(self.running_tasks)
         num_completed_tasks = len(self.completed_tasks)
         num_failed_tasks = len(self.failed_tasks)
-        self.logger.info(
+        # TODO: Make this use a logger instead of print statements
+        print(
             f"TASKS     === Pending tasks: {num_pending_tasks} | Running tasks: {num_running_tasks} | Completed tasks: {num_completed_tasks} | Failed tasks: {num_failed_tasks}"
         )
-
-        self.logger.info(
-            f"RESOURCES === Free Cores: {self.free_cores} | Free GPUs: {self.free_gpus}"
+        print(
+            f"RESOURCES === Free Cores: {self.free_cores} | Free GPUs: {self.free_gpus}\n"
         )
 
     def poolexecutor(
@@ -200,6 +201,8 @@ class SuperFluxManager:
                 - continue...
 
             """
+            print("=== ENTERING WORKFLOW ENVIRONMENT ===")
+            start = time.time()
             done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
             while not done:
                 self.check_resources()
@@ -210,13 +213,9 @@ class SuperFluxManager:
                 )
                 future_processing_strategy.process_futures(buffer_time)
 
-                self.check_resources()
-                self.log_progress()
-
-                if len(self.completed_tasks) % self.write_restart_freq == 0:
-                    # TODO: implement create_restart_file() method
-                    self.create_restart_file()
-
                 done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
 
             # TODO: Log that you are finished here
+            end = time.time()
+            print("=== EXITING WORKFLOW ENVIRONMENT ===")
+            print(f"Time Elapsed: {start - end}")

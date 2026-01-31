@@ -36,4 +36,4 @@ class NonAdaptiveStrategy(FutureProcessingStrategy):
                 self.manager.running_tasks.remove(fut.task)
 
             except concurrent.futures.CancelledError as e:
-                print(f"Task {fut.task} was cancelled before it was completed")
+                print(f"Task {fut.task} was cancelled before it was completed\n {e}")

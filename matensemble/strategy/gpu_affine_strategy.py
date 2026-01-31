@@ -37,8 +37,9 @@ class GPUAffineStrategy(TaskSubmissionStrategy):
             >= self.manager.tasks_per_job[0] * self.manager.gpus_per_task
             and len(self.manager.pending_tasks) > 0
         ):
-            self.manager.check_resources()
-            self.manager.log_progress()
+            cur_tasks_per_job = int(self.manager.tasks_per_job[0])
+            needed_cores = cur_tasks_per_job * self.manager.cores_per_task
+            needed_gpus = cur_tasks_per_job * self.manager.gpus_per_task
 
             # use double ended queue and  popleft for O(1) time complexity
             cur_task = self.manager.pending_tasks.popleft()
@@ -50,15 +51,14 @@ class GPUAffineStrategy(TaskSubmissionStrategy):
                 cur_task_dir = None
 
             self.manager.futures.add(
-                self.submit(
-                    cur_task, self.manager.tasks_per_job[0], cur_task_args, cur_task_dir
-                )
+                self.submit(cur_task, cur_tasks_per_job, cur_task_args, cur_task_dir)
             )
             self.manager.running_tasks.add(cur_task)
-
-            self.manager.check_resources()
-            self.manager.log_progress()
             self.manager.tasks_per_job.popleft()
+
+            self.manager.free_cores -= needed_cores
+            self.manager.free_gpus -= needed_gpus
+
             time.sleep(buffer_time)
 
     def submit(
