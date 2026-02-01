@@ -21,6 +21,72 @@ __package__ = "matensemble"
 
 
 class SuperFluxManager:
+    """
+    Task submission manager that orchestrates high-throughput Flux jobs
+    with 'Fluxlets' and tracks state and periodically 'pickles' restart files.
+
+    Attributes
+    ----------
+    pending_tasks: deque
+        A double ended-queue for tasks that are yet to start running or be
+        completed
+    running_tasks: set
+        The tasks that are currently running
+    completed_tasks: list
+        Tasks that have been completed successfully
+    failed_tasks: list
+        Tasks that have failed
+    flux_handle: flux.Flux()
+        The flux handle for resource managment and task execution
+    futures: set
+        Set of FluxExecutorFuture objects representing the tasks output
+    tasks_per_job: deque
+        Double ended-queue of integers representing the number of sub-tasks per
+        task
+    cores_per_task: int
+        The number of CPU cores that will be allocated to each task
+    gpus_per_task: int
+        The number of GPUs that will be allocated to each task
+    gen_task_cmd: str
+        The general command that each task will follow
+    write_restart_frew: int
+        How many tasks need to be completed before creating another restart file
+    executor: flux.Executor()
+        Executor for task submission
+
+    Methods
+    -------
+    load_restart(filename)
+        Sets the completed_tasks, running_tasks, pending_tasks and failed_tasks
+        and restarts the ensemble
+    create_restart_file()
+        Pickles the current state of the program into a file
+    check_resources()
+        Gets the available resources from Flux's Remote Procedure Call (RPC)
+    setup_logger()
+        Sets up logging for the state of the program to a log file and to
+        standard output
+    log_progress()
+        Logs the current state of the program, pending_tasks, running_tasks,
+        completed_tasks, failed_tasks and a resource count free_cores and
+        free_gpus
+    poolexecutor(
+        self,
+        task_arg_list,
+        buffer_time=0.5,
+        task_dir_list=None,
+        adaptive=True,
+        dynopro=False,
+    )
+        High-throughput executor implementation
+
+    Notes
+    -----
+    buffer_time is used by strategies both as a polling timeout and as an intentional
+    submission pacing delay (time.sleep), so large values can significantly slow
+    end-to-end throughput.
+    """
+
     def __init__(
         self,
         gen_task_list,
@@ -33,6 +99,35 @@ class SuperFluxManager:
         gpus_per_node=None,
         restart_filename=None,
     ) -> None:
+        """
+        Parameters
+        ----------
+        gen_task_list: list
+            A list of tasks to be executed, each element being the task's ID
+            usually integers but could be anything
+        gen_task_cmd: str
+            The executable file that will be executed for each task
+        write_restart_freq: int, optional
+            the number of tasks that should be completed before pickling a
+            restart file
+        tasks_per_job: int, list[int], optional
+            a list of integers representing the sub-tasks that each tasks will have.
+            Could either be an integer (every task will have the same number of sub
+            tasks) or a list of integers. Will default to 1 task_per_job if left out
+        cores_per_task: int, optional
+            The number of CPU cores that each task will be allocated, default is 1
+        gpus_per_task: int, optional
+            The number of GPUs that each task will be allocated, default is 0
+        nnodes: int, optional
+            The number of nodes that will be allocated for the ensemble
+        gpus_per_node: int, optional
+            The number of GPUs that each node has available
+        restart_filename: str, optional
+            Optional if the attribute is given and is a .dat file then the ensemble
+            will start from where it left off
+
+        """
+
         self.pending_tasks = deque(copy.copy(gen_task_list))
         self.running_tasks = set()
         self.completed_tasks = []
@@ -71,6 +166,16 @@ class SuperFluxManager:
     #       running and you don't resent the task arg and dir lists. Talk with
     #       Dr. Bagchi about this
     def load_restart(self, filename):
+        """
+        Sets the completed_tasks, running_tasks, pending_tasks and failed_tasks
+        and restarts the ensemble
+
+        Parameters
+        ----------
+        filename: str
+            The name of the file to restart from
+        """
+
         if (filename is not None) and os.path.isfile(filename):
             try:
                 task_log = pickle.load(open(filename, "rb"))
@@ -86,6 +191,10 @@ class SuperFluxManager:
                 # self.logger.warning("%s", e)
 
     def create_restart_file(self) -> None:
+        """
+        Pickles the current state of the program into a file
+        """
+
         self.task_log = {
             "Completed tasks": self.completed_tasks,
             "Running tasks": self.running_tasks,
@@ -98,6 +207,10 @@ class SuperFluxManager:
         )
 
     def check_resources(self) -> None:
+        """
+        Gets the available resources from Flux's Remote Procedure Call (RPC)
+        """
+
         self.status = flux.resource.status.ResourceStatusRPC(self.flux_handle).get()
         self.resource_list = flux.resource.list.resource_list(self.flux_handle).get()
         self.resource = flux.resource.list.resource_list(self.flux_handle).get()
@@ -106,6 +219,11 @@ class SuperFluxManager:
         self.free_excess_cores = self.free_cores - self.free_gpus
 
     def setup_logger(self):
+        """
+        Sets up logging for the state of the program to a log file and to
+        standard output
+        """
+
         self.logger = logging.getLogger(__name__)
 
         stdoutHandler = logging.StreamHandler(stream=sys.stdout)
@@ -129,6 +247,12 @@ class SuperFluxManager:
     # HACK: move method to logger somehow or just call it here
     # TODO: Implement this,
     def log_progress(self) -> None:
+        """
+        Logs the current state of the program, pending_tasks, running_tasks,
+        completed_tasks, failed_tasks and a resource count free_cores and
+        free_gpus
+        """
+
         num_pending_tasks = len(self.pending_tasks)
         num_running_tasks = len(self.running_tasks)
         num_completed_tasks = len(self.completed_tasks)
@@ -152,23 +276,44 @@ class SuperFluxManager:
         """
         High-throughput executor implementation
 
-        Args:
-            task_arg_list (List): List of tasks to be schedules and completed
-            buffer_time (num): The amount of time that will be used as the timeout= option for Future objects
-            task_dir_list (List): Where completed tasks output files will be placed
-            adaptive (bool): Whether or not tasks are scheduled adaptively
-            dynopro (bool): Whether or not the dynopro module will be used for task submission
+        Runs a "super loop" until there are no more pending tasks and no
+        running tasks.
+        Each loop iteration:
+        1) refreshes available resources
+        2) prints a progress snapshot
+        3) submits new jobs until resources are exhausted using a
+           TaskSubmissionStrategy:
+           - DynoproStrategy if dynopro=True
+           - GPUAffineStrategy if gpus_per_task > 0
+           - CPUAffineStrategy otherwise
+        4) processes completed jobs using a FutureProcessingStrategy:
+           - AdaptiveStrategy if adaptive=True
+           - NonAdaptiveStrategy otherwise
 
-        Return:
-            None
+        Parameters
+        ----------
+        task_arg_list: List:
+            List of tasks to be scheduled and completed
+        buffer_time: num
+            The amount of time that will be used as the timeout= option for
+            Future objects
+        task_dir_list List
+            Where completed tasks output files will be placed
+        adaptive: bool
+            Whether or not tasks are scheduled adaptively, default is True
+        dynopro: bool
+            Whether or not the dynopro module will be used for task submission,
+            default is False
+
+        Return
+        ------
+        None
 
         """
 
         # use double ended-queue and popleft for O(1) time complexity off front of lists
         gen_task_arg_list = deque(copy.copy(task_arg_list))
         gen_task_dir_list = deque(copy.copy(task_dir_list)) if task_dir_list else None
-
-        # prepare resources
 
         # initialize submission strategy based on params at run-time
 
@@ -187,22 +332,15 @@ class SuperFluxManager:
         else:
             future_processing_strategy = NonAdaptiveStrategy(self)
 
+        # prepare resources
         self.flux_handle.rpc("resource.drain", {"targets": "0"}).get()
         with flux.job.FluxExecutor() as executor:
-            # set executor in manager so that strategies can use it
+            # set executor in manager so that strategies can access it
             self.executor = executor
 
-            """
-            Super loop: while you have jobs to run and/or running jobs
-                - submit jobs until you are out of resources 
-                - process running jobs 
-                - update resources
-                - create restart file if needed
-                - continue...
-
-            """
             print("=== ENTERING WORKFLOW ENVIRONMENT ===")
             start = time.perf_counter()
+
             done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
             while not done:
                 self.check_resources()
@@ -215,7 +353,6 @@ class SuperFluxManager:
 
                 done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
 
-            # TODO: Log that you are finished here
             end = time.perf_counter()
             print("=== EXITING WORKFLOW ENVIRONMENT ===")
             print(f"Workflow took {(start - end):.4f} seconds to run.")

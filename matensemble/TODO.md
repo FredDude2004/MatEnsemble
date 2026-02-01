@@ -3,6 +3,7 @@
 - [x] Implement the stategies 
 - [x] Create strategy base class for processing futures
 - [x] Implement strategies for processing futures
+- [x] Refactor matflux.py and matfluxGen.py to be more modular and in one manager.py 
 
 - [x] Test matflux/matfluxGen refactor make sure it works before doing anything else
 - [x] Fix problems and test again 
@@ -16,16 +17,21 @@
 
 - [x] Fix problems causing slowdown and test again
     * More Problems: 
-    - [ ] Make tests consistent so that we have an apples to apples comparison
+    - [x] Make tests consistent so that we have an apples to apples comparison
     - [x] Remove extra logging and RPC calls to limit traffic 
     - [x] Update resources calls to update in place in submit_until_ooresources()
 
-- [ ] Test matensemble again until it is working as before
+- [x] Test matensemble again until it is working as before
+
+  **Got it working as before**
 
 - [ ] Update logging to be more industry standard 
 - [ ] Refactor Fluxlet to remove global side effects
 - [ ] Add type annotations back to strategies
 - [ ] Document all of the code vigorously 
+    - [x] Document manager.py
+    - [ ] Document fluxlet.py
+    - [ ] Document strategies/*
 
 - [ ] Allow tasks to have other tasks as dependencies
 
