@@ -224,7 +224,9 @@ class SuperFluxManager:
         Gets the available resources from Flux's Remote Procedure Call (RPC)
         """
 
-        self.status = flux.resource.status.ResourceStatusRPC(self.flux_handle).get()
+        self.resource_status = flux.resource.status.ResourceStatusRPC(
+            self.flux_handle
+        ).get()
         self.resource_list = flux.resource.list.resource_list(self.flux_handle).get()
         self.resource = flux.resource.list.resource_list(self.flux_handle).get()
         self.free_gpus = self.resource.free.ngpus
