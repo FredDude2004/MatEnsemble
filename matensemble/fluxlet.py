@@ -1,10 +1,49 @@
 import numpy as np
 import flux.job
+import shlex
 import os
 
+from pathlib import Path
 
-# HACK: Remove any global side effects if possible, but test first refactor first
-# TODO: Clean this up
+
+def _normalize_task_args(task_args):
+    if isinstance(task_args, list):
+        return [str(arg) for arg in task_args]
+    if task_args is None:
+        return []
+    if isinstance(task_args, (str, int, float, np.int64, np.float64, dict)):
+        return [str(task_args)]
+    raise TypeError(
+        f"ERROR: Task argument can not be {type(task_args)}. "
+        "Currently supports `list`, `str`, `int`, `float`, `np.int64`, `np.int64`, and `dict` types"
+    )
+
+
+def _resolve_workdir(
+    task,
+    task_directory=None,
+    base_out_dir=None,
+    launch_dir=None,
+) -> Path:
+    """
+    Decide where the task should run and where stdout/stderr land.
+    No cwd changes; just returns an absolute Path that exists.
+    """
+    launch_dir = Path(launch_dir or os.getcwd())
+
+    if task_directory is not None:
+        p = Path(task_directory)
+        if not p.is_absolute():
+            root = Path(base_out_dir) if base_out_dir is not None else launch_dir
+            p = root / p
+    else:
+        root = Path(base_out_dir) if base_out_dir is not None else launch_dir
+        p = root / str(task)
+
+    p.mkdir(parents=True, exist_ok=True)
+    return p.resolve()
+
+
 class Fluxlet:
     def __init__(self, handle, tasks_per_job, cores_per_task, gpus_per_task):
         self.flux_handle = handle
@@ -20,45 +59,22 @@ class Fluxlet:
         task,
         task_args,
         task_directory=None,
+        base_out_dir=None,  # NEW (optional): preferred integration with your workflow out/ dir
         set_gpu_affinity=False,
         set_cpu_affinity=True,
         set_mpi=None,
+        env=None,  # NEW (optional): allow caller to control environment
     ):
-        launch_dir = os.getcwd()
-        cmd_list = command.split(" ")
+        workdir = _resolve_workdir(
+            task=task,
+            task_directory=task_directory,
+            base_out_dir=base_out_dir,
+            launch_dir=os.getcwd(),
+        )
 
-        if task_directory is not None:
-            try:
-                os.chdir(os.path.abspath(task_directory))
-            except:
-                print(
-                    f"Could not find task directory {task_directory}: So, creating one instead . . ."
-                )
-                os.mkdir(os.path.abspath(task_directory))
-                os.chdir(task_directory)
-        else:
-            print(
-                "No directories are specified for the task. Task-list will serve as directory tree."
-            )
-            try:
-                os.chdir(str(task))
-            except:
-                os.mkdir(str(task))
-                os.chdir(str(task))
-
-        print(os.getcwd())
-        if isinstance(task_args, list):
-            str_args = [str(arg) for arg in task_args]
-        elif task_args is None:
-            str_args = []
-        elif isinstance(task_args, (str, int, float, np.int64, np.float64, dict)):
-            str_args = [str(task_args)]
-        else:
-            raise TypeError(
-                f"ERROR: Task argument can not be {type(task_args)}. Currently supports `list`, `str`, `int`, `float`, `np.int64`, `np.float64`, and `dict` types"
-            )
-
-        cmd_list.extend(str_args)
+        # safer than command.split(" ") because it respects quoting
+        cmd_list = shlex.split(command)
+        cmd_list.extend(_normalize_task_args(task_args))
 
         jobspec = flux.job.JobspecV1.from_command(
             cmd_list,
@@ -67,7 +83,7 @@ class Fluxlet:
             gpus_per_task=self.gpus_per_task,
         )
 
-        jobspec.cwd = os.getcwd()
+        jobspec.cwd = str(workdir)
 
         if set_mpi is not None:
             jobspec.setattr_shell_option("mpi", "pmi2")
@@ -75,20 +91,24 @@ class Fluxlet:
             jobspec.setattr_shell_option("cpu-affinity", "per-task")
         if set_gpu_affinity and self.gpus_per_task > 0:
             jobspec.setattr_shell_option("gpu-affinity", "per-task")
-        jobspec.environment = dict(os.environ)
 
-        jobspec.stdout = os.path.join(os.getcwd(), "stdout")
-        jobspec.stderr = os.path.join(os.getcwd(), "stderr")
+        job_env = dict(os.environ) if env is None else dict(env)
+        jobspec.environment = job_env
+
+        jobspec.stdout = str(workdir / "stdout")
+        jobspec.stderr = str(workdir / "stderr")
 
         self.resources = getattr(jobspec, "resources", None)
-        self.future = executor.submit(jobspec)
+        future = executor.submit(jobspec)
 
-        # TODO: Make this only use the variables that are needed (task and jobspec)
-        self.future.task_ = task  # This is here for compatibility while testing
-        self.future.task = task
-        self.future.job_spec = jobspec
+        # compatibility with existing code
+        future.task_ = task
+        future.task = task
+        future.job_spec = jobspec
+        future.workdir = str(workdir)  # NEW: convenient for debugging/reporting
 
-        os.chdir(launch_dir)
+        self.future = future
+        return future
 
     def hetero_job_submit(
         self,
@@ -99,25 +119,32 @@ class Fluxlet:
         task,
         task_args,
         task_directory=None,
+        base_out_dir=None,  # NEW
         set_gpu_affinity=False,
         set_cpu_affinity=True,
         set_mpi=None,
+        env=None,  # NEW
     ):
-        self.nnodes = nnodes
-        self.gpus_per_node = gpus_per_node
-        os.environ["SLURM_GPUS_PER_NODE"] = str(self.gpus_per_node)
+        workdir = _resolve_workdir(
+            task=task,
+            task_directory=task_directory,
+            base_out_dir=base_out_dir,
+            launch_dir=os.getcwd(),
+        )
 
-        self.build_task_command(command, task, task_args, task_directory)
+        cmd_list = shlex.split(command)
+        cmd_list.extend(_normalize_task_args(task_args))
+
         jobspec = flux.job.JobspecV1.per_resource(
-            self.cmd,
+            cmd_list,
             ncores=int(self.tasks_per_job),
-            nnodes=self.nnodes,
-            gpus_per_node=self.gpus_per_node,
+            nnodes=nnodes,
+            gpus_per_node=gpus_per_node,
             per_resource_type="core",
             per_resource_count=1,
         )
 
-        jobspec.cwd = os.getcwd()
+        jobspec.cwd = str(workdir)
 
         if set_mpi is not None:
             jobspec.setattr_shell_option("mpi", "pmi2")
@@ -125,55 +152,22 @@ class Fluxlet:
             jobspec.setattr_shell_option("cpu-affinity", "per-task")
         if set_gpu_affinity and self.gpus_per_task > 0:
             jobspec.setattr_shell_option("gpu-affinity", "per-task")
-        jobspec.environment = dict(os.environ)
 
-        jobspec.stdout = os.path.join(os.getcwd(), "stdout")
-        jobspec.stderr = os.path.join(os.getcwd(), "stderr")
+        job_env = dict(os.environ) if env is None else dict(env)
+        # avoid global os.environ mutation (current code does this)
+        job_env["SLURM_GPUS_PER_NODE"] = str(gpus_per_node)
+        jobspec.environment = job_env
+
+        jobspec.stdout = str(workdir / "stdout")
+        jobspec.stderr = str(workdir / "stderr")
 
         self.resources = getattr(jobspec, "resources", None)
-        self.future = executor.submit(jobspec)
+        future = executor.submit(jobspec)
 
-        # TODO: Make this only use the variables that are needed (task and jobspec)
-        self.future.task_ = task  # This is here for compatibility while testing
-        self.future.task = task
-        self.future.job_spec = jobspec
+        future.task_ = task
+        future.task = task
+        future.job_spec = jobspec
+        future.workdir = str(workdir)
 
-        os.chdir(self.launch_dir)
-
-    def build_task_command(self, command, task, task_args, task_directory=None):
-        self.launch_dir = os.getcwd()
-        cmd_list = command.split(" ")
-
-        if task_directory is not None:
-            try:
-                os.chdir(os.path.abspath(task_directory))
-            except:
-                print(
-                    f"Could not find task directory {task_directory}: So, creating one instead . . ."
-                )
-                os.mkdir(os.path.abspath(task_directory))
-                os.chdir(task_directory)
-        else:
-            print(
-                "No directories are specified for the task. Task-list will serve as directory tree."
-            )
-            try:
-                os.chdir(str(task))
-            except:
-                os.mkdir(str(task))
-                os.chdir(str(task))
-
-        print(os.getcwd())
-        if isinstance(task_args, list):
-            str_args = [str(arg) for arg in task_args]
-        elif task_args is None:
-            str_args = []
-        elif isinstance(task_args, (str, int, float, np.int64, np.float64, dict)):
-            str_args = [str(task_args)]
-        else:
-            raise TypeError(
-                f"ERROR: Task argument can not be {type(task_args)}. Currently supports `list`, `str`, `int`, `float`, `np.int64`, `np.float64`, and `dict` types"
-            )
-
-        cmd_list.extend(str_args)
-        self.cmd = cmd_list
+        self.future = future
+        return future

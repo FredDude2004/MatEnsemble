@@ -32,6 +32,7 @@
     - [x] Document manager.py
     - [ ] Document fluxlet.py
     - [ ] Document strategies/*
+- [ ] Remove all TODOs and HACKs
 
 - [ ] Allow tasks to have other tasks as dependencies
 

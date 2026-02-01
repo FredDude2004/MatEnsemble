@@ -9,11 +9,13 @@ import flux
 import copy
 import os
 
+
 from matensemble.strategy.not_adaptive_strategy import NonAdaptiveStrategy
 from matensemble.strategy.cpu_affine_strategy import CPUAffineStrategy
 from matensemble.strategy.gpu_affine_strategy import GPUAffineStrategy
 from matensemble.strategy.adaptive_strategy import AdaptiveStrategy
 from matensemble.strategy.dynopro_strategy import DynoproStrategy
+from matensemble.logger import setup_workflow_logging
 from collections import deque
 
 __author__ = ["Soumendu Bagchi", "Kaleb Duchesneau"]
@@ -53,6 +55,18 @@ class SuperFluxManager:
         How many tasks need to be completed before creating another restart file
     executor: flux.Executor()
         Executor for task submission
+    logger: logging.Logger()
+        Handles logging status and updates
+    status: matensemble.logging.StatusWriter()
+        Writes to a status file that the user can watch to see progress updates
+    paths: matensemble.logger.WorkflowPaths()
+        Creates the output directories to in the following structure
+        <director_job_is_launched_from>/<SLURM_JOB_ID>_matensemble_workflow/
+          |-status.log
+          |-logs/
+            |-<timestamp>_matensemble_workflow.log
+          |-out/
+            |-<output_of_workflow>
 
     Methods
     -------
@@ -158,8 +172,7 @@ class SuperFluxManager:
         # TODO: Make the logger actually work the way you want it to
         # self.logger = logging.getLogger("matensemble")
         # self.load_restart(restart_filename)
-
-        self.setup_logger()
+        self.logger, self.status, self.paths = setup_workflow_logging()
 
     # HACK: make sure this is consistent with what create_restart_file() produces
     # TODO: This probably doesn't work, it you will lose any jobs that were
@@ -252,17 +265,23 @@ class SuperFluxManager:
         completed_tasks, failed_tasks and a resource count free_cores and
         free_gpus
         """
-
-        num_pending_tasks = len(self.pending_tasks)
-        num_running_tasks = len(self.running_tasks)
-        num_completed_tasks = len(self.completed_tasks)
-        num_failed_tasks = len(self.failed_tasks)
-        # TODO: Make this use a logger instead of print statements
-        print(
-            f"TASKS     === Pending tasks: {num_pending_tasks} | Running tasks: {num_running_tasks} | Completed tasks: {num_completed_tasks} | Failed tasks: {num_failed_tasks}"
+        self.status.update(
+            pending=len(self.pending_tasks),
+            running=len(self.running_tasks),
+            completed=len(self.completed_tasks),
+            failed=len(self.failed_tasks),
+            free_cores=self.free_cores,
+            free_gpus=self.free_gpus,
         )
-        print(
-            f"RESOURCES === Free Cores: {self.free_cores} | Free GPUs: {self.free_gpus}\n"
+
+        self.logger.info(
+            "jobs pending=%d running=%d completed=%d failed=%d | resources free_cores=%d free_gpus=%d",
+            len(self.pending_tasks),
+            len(self.running_tasks),
+            len(self.completed_tasks),
+            len(self.failed_tasks),
+            self.free_cores,
+            self.free_gpus,
         )
 
     def poolexecutor(

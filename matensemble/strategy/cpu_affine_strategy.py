@@ -71,6 +71,7 @@ class CPUAffineStrategy(TaskSubmissionStrategy):
             task,
             task_args,
             task_dir,
+            base_out_dir=self.manager.paths.out_dir,
         )
 
         return fluxlet.future
