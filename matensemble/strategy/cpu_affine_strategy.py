@@ -7,27 +7,46 @@ from matensemble.fluxlet import Fluxlet
 
 class CPUAffineStrategy(TaskSubmissionStrategy):
     """
-    Implements the TaskSubmissionStrategy interface, a strategy class
-    allowing the manager (SuperFluxManager) to implement a different strategy
-    based on the parameters given to it at run time
+    Implements the TaskSubmissionStrategy interface. This is the most basic
+    implmentation of the interface and also the default.
     """
 
     # TODO: potentially add back type annotation for manager
     def __init__(self, manager) -> None:
+        """
+        Parameters
+        ----------
+        manager: SuperFluxManager
+            A reference to a SuperFluxManager object
+
+        Return
+        ------
+        None
+        """
+
         self.manager = manager
 
     def submit_until_ooresources(
         self, task_arg_list, task_dir_list, buffer_time
     ) -> None:
-        """Submit pending tasks until you are out of resources
-
-        Args:
-            manager (SuperFluxManager): manages resources and calls this method
-                                        based on its strategy
-        Returns:
-            None.
-
         """
+        Submit pending tasks until you are out of resources and updates the
+        status lists in the SuperFluxManager
+
+        Parameters
+        ----------
+        task_arg_list: list[str | int]
+            List of the order of tasks to be completed in
+        task_dir_list: list[srt]
+            List of directories for the completed tasks to go into
+        buffer_time: int | float
+            The time to sleep after submitting all of your jobs
+
+        Return
+        ------
+        None
+        """
+
         while (
             self.manager.tasks_per_job
             and self.manager.free_cores
@@ -59,6 +78,27 @@ class CPUAffineStrategy(TaskSubmissionStrategy):
     def submit(
         self, task, tasks_per_job, task_args, task_dir
     ) -> flux.job.executor.FluxExecutorFuture:
+        """
+        Creates a fluxlet object and submits the task
+
+        Parameters
+        ----------
+        task: str | int
+            The task to be submitted
+        tasks_per_job: int
+            The number of sub-tasks for the task to complete
+        task_args: list[str | int | float | np.int64 | np.float64 | dict]
+            The arguments for the task
+        task_dir: str
+            Where the task will
+
+        Return
+        ------
+        flux.job.executor.FluxExecutorFuture
+            A concurrent.futures.Future object representing the result of the
+            task
+        """
+
         fluxlet = Fluxlet(
             self.manager.flux_handle,
             tasks_per_job,

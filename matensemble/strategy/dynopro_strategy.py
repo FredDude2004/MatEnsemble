@@ -7,26 +7,45 @@ from matensemble.fluxlet import Fluxlet
 
 class DynoproStrategy(TaskSubmissionStrategy):
     """
-    Implements the TaskSubmissionStrategy interface, a strategy class
-    allowing the manager (SuperFluxManager) to implement a different strategy
-    based on the parameters given to it at run time
+    Implements the TaskSubmissionStrategy interface. This is esentially the same
+    as the CPUAffineStrategy but it uses the hetero_job_submit rather than the
+    job_submit
     """
 
     # TODO: potentially add back type annotation for manager
     def __init__(self, manager) -> None:
+        """
+        Parameters
+        ----------
+        manager: SuperFluxManager
+            manages resources and calls this method based on its strategy
+
+        Return
+        ------
+        None
+        """
+
         self.manager = manager
 
     def submit_until_ooresources(
         self, task_arg_list, task_dir_list, buffer_time
     ) -> None:
-        """Submit pending tasks until you are out of resources
+        """
+        Submit pending tasks until you are out of resources and updates the
+        status lists in the SuperFluxManager
 
-        Args:
-            manager (SuperFluxManager): manages resources and calls this method
-                                        based on its strategy
-        Returns:
-            None.
+        Parameters
+        ----------
+        task_arg_list: list[str | int]
+            List of the order of tasks to be completed in
+        task_dir_list: list[srt]
+            List of directories for the completed tasks to go into
+        buffer_time: int | float
+            The time to sleep after submitting all of your jobs
 
+        Return
+        ------
+        None
         """
 
         while (
@@ -59,6 +78,28 @@ class DynoproStrategy(TaskSubmissionStrategy):
     def submit(
         self, task, tasks_per_job, task_args, task_dir
     ) -> flux.job.executor.FluxExecutorFuture:
+        """
+        Creates a fluxlet object and submits the task with the hetero_job_submit
+        rather than the regular submit
+
+        Parameters
+        ----------
+        task: str | int
+            The task to be submitted
+        tasks_per_job: int
+            The number of sub-tasks for the task to complete
+        task_args: list[str | int | float | np.int64 | np.float64 | dict]
+            The arguments for the task
+        task_dir: str
+            Where the task will
+
+        Return
+        ------
+        flux.job.executor.FluxExecutorFuture
+            A concurrent.futures.Future object representing the result of the
+            task
+        """
+
         if self.manager.nnodes is None or self.manager.gpus_per_node is None:
             raise ValueError(
                 "ERROR: For dynopro provisioning, nnodes and gpus_per_node can not be None"

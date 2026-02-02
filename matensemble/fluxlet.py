@@ -6,7 +6,16 @@ import os
 from pathlib import Path
 
 
-def _normalize_task_args(task_args):
+def normalize_task_args(task_args):
+    """
+    Ensure that the task_args are of the supported types
+
+    Parameters
+    ----------
+    task_args: list[int | str | float] | int | str | float | np.int64 | dict
+        The arguments for the task
+    """
+
     if isinstance(task_args, list):
         return [str(arg) for arg in task_args]
     if task_args is None:
@@ -19,7 +28,7 @@ def _normalize_task_args(task_args):
     )
 
 
-def _resolve_workdir(
+def resolve_workdir(
     task,
     task_directory=None,
     base_out_dir=None,
@@ -27,8 +36,9 @@ def _resolve_workdir(
 ) -> Path:
     """
     Decide where the task should run and where stdout/stderr land.
-    No cwd changes; just returns an absolute Path that exists.
+    No cwd changes, just returns an absolute Path that exists.
     """
+
     launch_dir = Path(launch_dir or os.getcwd())
 
     if task_directory is not None:
@@ -45,7 +55,50 @@ def _resolve_workdir(
 
 
 class Fluxlet:
-    def __init__(self, handle, tasks_per_job, cores_per_task, gpus_per_task):
+    """
+    Wrapper around Flux job submission for a single 'task'.
+
+    A Fluxlet builds a Flux Jobspec for a task,
+    applies resource requirements (tasks_per_job, cores_per_task, gpus_per_task),
+    and submits it through a FluxExecutor.
+
+    For convenience/debugging, the submitted Future is annotated with metadata
+    (e.g., task id, jobspec, workdir), so higher-level orchestration code
+    (SuperFluxManager / strategy implementations) can track progress and locate
+    task outputs.
+
+    Attributes
+    ----------
+    flux_handle: flux.Flux()
+        A reference to the flux instance that is managing the resources
+    future: list[FluxExecutorFuture]
+        The future objects representing the completion of tasks
+    tasks_per_job: int
+        The number of sub-tasks that will go along with a task
+    cores_per_task: int
+        The number of CPU cores that a task requires
+    gpus_per_task: int
+        The number of GPUs that a task requires
+    """
+
+    def __init__(self, handle, tasks_per_job, cores_per_task, gpus_per_task) -> None:
+        """
+        Parameters
+        ----------
+        handle: flux.Flux()
+            A reference to the SuperFluxManager's flux handle
+        tasks_per_job: int
+            The number of sub-tasks that will go along with a task
+        cores_per_task: int
+            The number of CPU cores that a task requires
+        gpus_per_task: int
+            The number of GPUs that a task requires
+
+        Return
+        ------
+        None
+        """
+
         self.flux_handle = handle
         self.future = []
         self.tasks_per_job = tasks_per_job
@@ -59,22 +112,48 @@ class Fluxlet:
         task,
         task_args,
         task_directory=None,
-        base_out_dir=None,  # NEW (optional): preferred integration with your workflow out/ dir
+        base_out_dir=None,
         set_gpu_affinity=False,
         set_cpu_affinity=True,
         set_mpi=None,
-        env=None,  # NEW (optional): allow caller to control environment
-    ):
-        workdir = _resolve_workdir(
+        env=None,
+    ) -> flux.job.FluxExecutorFuture:
+        """
+        Submits a job to a with the given FluxExecutor.
+
+        Parameters
+        ----------
+        executor: FluxExecutor
+            The executor that the task will be submitted to
+        command: str
+            The command to run the task
+        task: str | int
+            The task ID
+        task_args: list[str | int]
+            The arguments of the task
+        task_directory: str
+            The directory where the results of the task will be placed
+        base_out_dir: Path
+            The base dir of where the entire workflow's output is
+        set_gpu_affinity: bool
+            Whether the task can-be/prefer computed on GPUs
+        set_cpu_affinity:
+            Whether the task perfers the CPU
+        set_mpi: bool | None
+            Whether the task will use a message passing interface
+        env: i really don't know on this one
+            I forgot what this is ¯\\(ツ)/¯
+        """
+
+        workdir = resolve_workdir(
             task=task,
             task_directory=task_directory,
             base_out_dir=base_out_dir,
             launch_dir=os.getcwd(),
         )
 
-        # safer than command.split(" ") because it respects quoting
         cmd_list = shlex.split(command)
-        cmd_list.extend(_normalize_task_args(task_args))
+        cmd_list.extend(normalize_task_args(task_args))
 
         jobspec = flux.job.JobspecV1.from_command(
             cmd_list,
@@ -125,7 +204,11 @@ class Fluxlet:
         set_mpi=None,
         env=None,  # NEW
     ):
-        workdir = _resolve_workdir(
+        """
+        Same as job_submit but uses the GPU for redis streaming I think
+        """
+
+        workdir = resolve_workdir(
             task=task,
             task_directory=task_directory,
             base_out_dir=base_out_dir,
@@ -133,7 +216,7 @@ class Fluxlet:
         )
 
         cmd_list = shlex.split(command)
-        cmd_list.extend(_normalize_task_args(task_args))
+        cmd_list.extend(normalize_task_args(task_args))
 
         jobspec = flux.job.JobspecV1.per_resource(
             cmd_list,

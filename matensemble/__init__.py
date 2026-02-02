@@ -1,0 +1,18 @@
+__author__ = ["Soumendu Bagchi", "Kaleb Duchesneau"]
+__package__ = "matensemble"
+
+"""
+MatEnsemble
+
+MatEnsemble is an adaptive workflow manager designed for high throughput HPC
+workflows/tasks
+
+The package consists of the 'manager' which holds the main SuperFluxManager
+class where the bulk of the task management logic resides. A 'fluxlet' which
+handles job submission and usage of the Flux API's. And a logger which handles
+organizing the output of the program and logging the status and more general
+logs.
+
+
+
+"""

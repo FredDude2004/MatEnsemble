@@ -25,8 +25,8 @@
 
   **Got it working as before**
 
-- [ ] Update logging to be more industry standard 
-- [ ] Refactor Fluxlet to remove global side effects
+- [x] Update logging to be more industry standard 
+- [x] Refactor Fluxlet to remove global side effects
 - [ ] Add type annotations back to strategies
 - [ ] Document all of the code vigorously 
     - [x] Document manager.py

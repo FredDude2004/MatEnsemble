@@ -1,4 +1,3 @@
-- [ ] Add manager type annotation for all the strategies
 
 Here are the things that you need to do.
 

@@ -1,38 +1,28 @@
 """
-I want the logger to create a directory that all logs will go into when the user
+The logger creates a directory that all logs will go into when the user
 runs the program. When the logger is setup it will create a directory named
 <SLURM_JOB_ID>_matensemble_workflow/ and inside of this directory there will
 be the status file and directories for output, logs and errors.
 
-There should be two files that are created when running the program. A status
-file that shows the resource count and the number of jobs that the user will be
-able to 'watch' during execution to see the status of their program. The status
-should be located at <SLURM_JOB_ID>_matensemble_workflow/status.log.
-```python
-import os
-job_id = os.environ.get('SLURM_JOB_ID')
-```
+The status file shows the resource count and the status of the tasks that the
+user will be able to 'watch' during execution to see the status of their program.
+The status should be located at <SLURM_JOB_ID>_matensemble_workflow/status.log.
 
-There should be a second more verbose log file that get written to
-<SLURM_JOB_ID>_matensemble_workflow/ that is named in the format
-YYYY-MM-DD:HH:MM:SS_matensemble_workflow.log. This file will have everything that
-the status file has but be more versbose and have timestamps. If the user
-runs the same workflow multiple times this will be
-
-The last thing is the out/ directory that will hold all of the tasks and will
-have all of their output including stdout and stderr.
-
-Here is the format that I want the status file to hold to:
+Status file format:
 ```
 JOBS:      Pending     Running     Completed   Failed
            {num     }  {num     }  {num     }  {num     }
 
-RESOURCES: Free Cores -Free GPUs
+RESOURCES: Free Cores Free GPUs
            {num     } {num     }
 ```
-This is just a suggestion if there is a more user friendly way I am open to it.
 
-For the verbose log files they will look like this.
+The log file gets written to <SLURM_JOB_ID>_matensemble_workflow/ that is named
+in the format YYYY-MM-DD_HH-MM-SS_matensemble_workflow.log. This file will have
+everything that the status file has but be more versbose and have timestamps.
+
+The last thing is the out/ directory that will hold all of the tasks and will
+have all of their output including stdout and stderr.
 """
 
 from __future__ import annotations
@@ -43,12 +33,16 @@ import os
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 from pathlib import Path
 
 
 @dataclass(frozen=True)
 class WorkflowPaths:
+    """
+    Dataclass to hold the locations for the status file, log file, and output
+    directory.
+    """
+
     base_dir: Path
     status_file: Path
     logs_dir: Path
@@ -56,18 +50,49 @@ class WorkflowPaths:
     verbose_log_file: Path
 
 
-def _job_id() -> str:
+def job_id() -> str:
+    """
+    Helper function to get the job_id to set the name of the
+    <SLURM_JOB_ID>_matensemble_workflow directory
+
+    Return
+    ------
+    str
+        The SLURM_JOB_ID environment variable or the process ID
+    """
+
     return os.environ.get("SLURM_JOB_ID") or f"local-{os.getpid()}"
 
 
-def _timestamp_for_filename() -> str:
+def timestamp_for_filename() -> str:
+    """
+    Helper function to get the date and time
+
+    Return
+    ------
+    str
+        The date and time in the format YYYY-MM-DD_HH-mm-SS
+    """
+
     return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
-def _atomic_write_text(path: Path, text: str) -> None:
+def atomic_write_text(path: Path, text: str) -> None:
     """
-    Atomic-ish replace so `watch cat status.log` never sees a half-written file.
+    Helper function so `watch cat status.log` never sees a half-written file.
+
+    Parameters
+    ---------
+    path: Path
+        The path to the status file
+    text: str
+        The str to write to the status file
+
+    Return
+    ------
+    None
     """
+
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_text(text, encoding="utf-8")
     os.replace(tmp, path)
@@ -75,7 +100,36 @@ def _atomic_write_text(path: Path, text: str) -> None:
 
 class StatusWriter:
     """
-    Maintains the human-friendly status file (overwritten each update).
+    Class to handle writing to the status file
+
+    Attributes
+    ----------
+    path: Path
+        the path to the status file
+
+    Methods
+    -------
+    render(
+        pending: int,
+        running: int,
+        completed: int,
+        failed: int,
+        free_cores: int,
+        free_gpus: int,
+        include_updated_line: bool = True,
+    )
+        Creates the output for the status of the program as a str and returns it
+    update(
+        self,
+        pending: int,
+        running: int,
+        completed: int,
+        failed: int,
+        free_cores: int,
+        free_gpus: int,
+    )
+        Calls the render method to create the text and then calls
+        atomic_write_text to write to the status file
     """
 
     def __init__(self, path: Path):
@@ -120,13 +174,35 @@ class StatusWriter:
         free_gpus: int,
     ) -> None:
         text = self.render(pending, running, completed, failed, free_cores, free_gpus)
-        _atomic_write_text(self.path, text)
+        atomic_write_text(self.path, text)
 
 
-def create_workflow_paths(base_dir: Optional[str | Path] = None) -> WorkflowPaths:
+def create_workflow_paths(base_dir: str | Path | None = None) -> WorkflowPaths:
+    """
+    Helper function to create the output directory
+
+    Returns
+    -------
+    WorkflowPaths
+        An object that encapsulates all of the paths for the output
+        files/directoriesof the matensemble workflow
+
+    Notes
+    -----
+    Structure of the output directory:
+
+        <SLURM_JOB_ID>_matensemble_workflow/
+            |- status.log
+            |- logs/
+                |- <timestamp>_matensemble_workflow.log
+            |- out/
+                |- <output_of_workflow>
+
+    """
+
     base_dir = Path(base_dir) if base_dir is not None else Path.cwd()
 
-    workflow_dir = base_dir / f"{_job_id()}_matensemble_workflow"
+    workflow_dir = base_dir / f"{job_id()}_matensemble_workflow"
     logs_dir = workflow_dir / "logs"
     out_dir = workflow_dir / "out"
     status_file = workflow_dir / "status.log"
@@ -136,7 +212,7 @@ def create_workflow_paths(base_dir: Optional[str | Path] = None) -> WorkflowPath
     out_dir.mkdir(parents=True, exist_ok=True)
 
     verbose_log_file = (
-        workflow_dir / f"{_timestamp_for_filename()}_matensemble_workflow.log"
+        workflow_dir / f"{timestamp_for_filename()}_matensemble_workflow.log"
     )
 
     return WorkflowPaths(
@@ -150,14 +226,30 @@ def create_workflow_paths(base_dir: Optional[str | Path] = None) -> WorkflowPath
 
 def setup_workflow_logging(
     logger_name: str = "matensemble",
-    base_dir: Optional[str | Path] = None,
-    console: Optional[bool] = None,
+    base_dir: str | Path | None = None,
+    console: bool | None = None,
 ) -> tuple[logging.Logger, StatusWriter, WorkflowPaths]:
     """
     Creates:
       - workflow directory tree
       - status writer (status.log)
       - verbose python logger (timestamped file, optional console)
+
+    Parameters
+    ----------
+    logger_name: str
+        The name of the logger
+    base_dir: str | Path
+        Where the matensemble_workflow directory will be setup
+    console: bool | None
+        Whether or not we are in an interactive environment
+
+    Return
+    ------
+    tuple
+        a three element tuple with the logger, StatusWriter and WorkflowPaths
+
+
     """
     paths = create_workflow_paths(base_dir)
     status = StatusWriter(paths.status_file)

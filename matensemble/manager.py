@@ -1,3 +1,5 @@
+from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
+from matensemble.strategy.submission_strategy_base import TaskSubmissionStrategy
 import numpy as np
 import flux.job
 import os.path
@@ -7,6 +9,7 @@ import pickle
 import time
 import flux
 import copy
+import sys
 import os
 
 
@@ -17,6 +20,7 @@ from matensemble.strategy.adaptive_strategy import AdaptiveStrategy
 from matensemble.strategy.dynopro_strategy import DynoproStrategy
 from matensemble.logger import setup_workflow_logging
 from collections import deque
+from datetime import datetime
 
 __author__ = ["Soumendu Bagchi", "Kaleb Duchesneau"]
 __package__ = "matensemble"
@@ -103,15 +107,15 @@ class SuperFluxManager:
 
     def __init__(
         self,
-        gen_task_list,
-        gen_task_cmd,
-        write_restart_freq=100,
-        tasks_per_job=None,
-        cores_per_task=1,
-        gpus_per_task=0,
-        nnodes=None,
-        gpus_per_node=None,
-        restart_filename=None,
+        gen_task_list: list[int | str],
+        gen_task_cmd: str,
+        write_restart_freq: int | None = 100,
+        tasks_per_job: int | list[int] | None = None,
+        cores_per_task: int = 1,
+        gpus_per_task: int = 0,
+        nnodes: int | None = None,
+        gpus_per_node: int | None = None,
+        restart_filename: str | None = None,
     ) -> None:
         """
         Parameters
@@ -173,12 +177,13 @@ class SuperFluxManager:
         # self.logger = logging.getLogger("matensemble")
         # self.load_restart(restart_filename)
         self.logger, self.status, self.paths = setup_workflow_logging()
+        self.load_restart(restart_filename)
 
     # HACK: make sure this is consistent with what create_restart_file() produces
     # TODO: This probably doesn't work, it you will lose any jobs that were
     #       running and you don't resent the task arg and dir lists. Talk with
     #       Dr. Bagchi about this
-    def load_restart(self, filename):
+    def load_restart(self, filename: str | None = None) -> None:
         """
         Sets the completed_tasks, running_tasks, pending_tasks and failed_tasks
         and restarts the ensemble
@@ -187,6 +192,10 @@ class SuperFluxManager:
         ----------
         filename: str
             The name of the file to restart from
+
+        Return
+        ------
+        None
         """
 
         if (filename is not None) and os.path.isfile(filename):
@@ -200,12 +209,16 @@ class SuperFluxManager:
                 #     "================= WORKFLOW RESTARTING =================="
                 # )
             except Exception as e:
-                print("%s", e)
-                # self.logger.warning("%s", e)
+                self.logger.warning("%s", e)
+                raise e
 
     def create_restart_file(self) -> None:
         """
         Pickles the current state of the program into a file
+
+        Return
+        ------
+        None
         """
 
         self.task_log = {
@@ -222,6 +235,10 @@ class SuperFluxManager:
     def check_resources(self) -> None:
         """
         Gets the available resources from Flux's Remote Procedure Call (RPC)
+
+        Return
+        ------
+        None
         """
 
         self.resource_status = flux.resource.status.ResourceStatusRPC(
@@ -233,10 +250,14 @@ class SuperFluxManager:
         self.free_cores = self.resource.free.ncores
         self.free_excess_cores = self.free_cores - self.free_gpus
 
-    def setup_logger(self):
+    def setup_logger(self) -> None:
         """
         Sets up logging for the state of the program to a log file and to
         standard output
+
+        Return
+        ------
+        None
         """
 
         self.logger = logging.getLogger(__name__)
@@ -266,6 +287,10 @@ class SuperFluxManager:
         Logs the current state of the program, pending_tasks, running_tasks,
         completed_tasks, failed_tasks and a resource count free_cores and
         free_gpus
+
+        Return
+        ------
+        None
         """
         self.status.update(
             pending=len(self.pending_tasks),
@@ -277,7 +302,7 @@ class SuperFluxManager:
         )
 
         self.logger.info(
-            "jobs pending=%d running=%d completed=%d failed=%d | resources free_cores=%d free_gpus=%d",
+            "JOBS: Pending=%d Running=%d Completed=%d Failed=%d | RESOURCES: Free_cores=%d Free_gpus=%d",
             len(self.pending_tasks),
             len(self.running_tasks),
             len(self.completed_tasks),
@@ -288,14 +313,29 @@ class SuperFluxManager:
 
     def poolexecutor(
         self,
-        task_arg_list,
-        buffer_time=0.5,
-        task_dir_list=None,
-        adaptive=True,
-        dynopro=False,
+        task_arg_list: list[int | str],
+        buffer_time: int | float = 0.5,
+        task_dir_list: list[str] | None = None,
+        adaptive: bool = True,
+        dynopro: bool = False,
+        submis_strat: TaskSubmissionStrategy | None = None,
+        fut_proc_strat: FutureProcessingStrategy | None = None,
     ) -> None:
         """
         High-throughput executor implementation
+
+        The poolexecutor uses the "Strategy Pattern" for a more concise and
+        modular implementation of the poolexecutor. Depending on whether or not
+        tasks make use of GPUs or only CPUs is adaptive or use the dynopro module
+        the TaskSubmissionStrategy will be determined at run time and injected
+        into the super loop.
+
+        For implementing your own strategies you can look at the docs in the
+        strategy directory of the matensemble package
+
+        GitHub:
+        Strategy Patter: https://refactoring.guru/design-patterns/strategy
+                         https://en.wikipedia.org/wiki/Design_Patterns
 
         Runs a "super loop" until there are no more pending tasks and no
         running tasks.
@@ -313,12 +353,12 @@ class SuperFluxManager:
 
         Parameters
         ----------
-        task_arg_list: List:
+        task_arg_list: list[int | str]
             List of tasks to be scheduled and completed
-        buffer_time: num
+        buffer_time: int | float
             The amount of time that will be used as the timeout= option for
             Future objects
-        task_dir_list List
+        task_dir_list: list[str]
             Where completed tasks output files will be placed
         adaptive: bool
             Whether or not tasks are scheduled adaptively, default is True
@@ -338,7 +378,9 @@ class SuperFluxManager:
 
         # initialize submission strategy based on params at run-time
 
-        if dynopro:
+        if submis_strat is not None:
+            submission_strategy = submis_strat
+        elif dynopro:
             submission_strategy = DynoproStrategy(self)
         elif self.gpus_per_task > 0:
             submission_strategy = GPUAffineStrategy(self)
@@ -346,7 +388,9 @@ class SuperFluxManager:
             submission_strategy = CPUAffineStrategy(self)
 
         # initialize future processing strategy at run-time
-        if adaptive:
+        if fut_proc_strat:
+            future_processing_strategy = fut_proc_strat
+        elif adaptive:
             future_processing_strategy = AdaptiveStrategy(
                 self, gen_task_arg_list, gen_task_dir_list
             )
@@ -375,5 +419,5 @@ class SuperFluxManager:
                 done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
 
             end = time.perf_counter()
-            print("=== EXITING WORKFLOW ENVIRONMENT ===")
+            print("=== EXITING WORKFLOW ENVIRONMENT  ===")
             print(f"Workflow took {(start - end):.4f} seconds to run.")
