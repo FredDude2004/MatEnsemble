@@ -12,7 +12,6 @@ class GPUAffineStrategy(TaskSubmissionStrategy):
     when submitting until out of resources.
     """
 
-    # TODO: potentially add back type annotation for manager
     def __init__(self, manager) -> None:
         """
         Parameters

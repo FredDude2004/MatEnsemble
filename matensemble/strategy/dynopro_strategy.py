@@ -12,7 +12,6 @@ class DynoproStrategy(TaskSubmissionStrategy):
     job_submit
     """
 
-    # TODO: potentially add back type annotation for manager
     def __init__(self, manager) -> None:
         """
         Parameters

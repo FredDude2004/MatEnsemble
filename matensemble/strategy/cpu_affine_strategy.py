@@ -11,7 +11,6 @@ class CPUAffineStrategy(TaskSubmissionStrategy):
     implmentation of the interface and also the default.
     """
 
-    # TODO: potentially add back type annotation for manager
     def __init__(self, manager) -> None:
         """
         Parameters

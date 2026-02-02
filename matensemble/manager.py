@@ -173,16 +173,9 @@ class SuperFluxManager:
         self.gen_task_cmd = gen_task_cmd
         self.write_restart_freq = write_restart_freq
 
-        # TODO: Make the logger actually work the way you want it to
-        # self.logger = logging.getLogger("matensemble")
-        # self.load_restart(restart_filename)
         self.logger, self.status, self.paths = setup_workflow_logging()
         self.load_restart(restart_filename)
 
-    # HACK: make sure this is consistent with what create_restart_file() produces
-    # TODO: This probably doesn't work, it you will lose any jobs that were
-    #       running and you don't resent the task arg and dir lists. Talk with
-    #       Dr. Bagchi about this
     def load_restart(self, filename: str | None = None) -> None:
         """
         Sets the completed_tasks, running_tasks, pending_tasks and failed_tasks
@@ -250,38 +243,6 @@ class SuperFluxManager:
         self.free_cores = self.resource.free.ncores
         self.free_excess_cores = self.free_cores - self.free_gpus
 
-    def setup_logger(self) -> None:
-        """
-        Sets up logging for the state of the program to a log file and to
-        standard output
-
-        Return
-        ------
-        None
-        """
-
-        self.logger = logging.getLogger(__name__)
-
-        stdoutHandler = logging.StreamHandler(stream=sys.stdout)
-        date_time_hash = str(datetime.now())
-        fileHandler = logging.FileHandler(f"logs-{date_time_hash}.txt")
-
-        Fmt = logging.Formatter(
-            "%(name)s %(asctime)s %(levelname)s %(filename)s %(lineno)s %(process)d %(message)s",
-            defaults={"levelname": "severity", "asctime": "timestamp"},
-            datefmt="%Y-%m-%dT%H:%M:%SZ",
-        )
-
-        stdoutHandler.setFormatter(Fmt)
-        fileHandler.setFormatter(Fmt)
-
-        self.logger.addHandler(stdoutHandler)
-        self.logger.addHandler(fileHandler)
-
-        self.logger.setLevel(logging.INFO)
-
-    # HACK: move method to logger somehow or just call it here
-    # TODO: Implement this,
     def log_progress(self) -> None:
         """
         Logs the current state of the program, pending_tasks, running_tasks,
@@ -403,7 +364,7 @@ class SuperFluxManager:
             # set executor in manager so that strategies can access it
             self.executor = executor
 
-            print("=== ENTERING WORKFLOW ENVIRONMENT ===")
+            self.logger.info("=== ENTERING WORKFLOW ENVIRONMENT ===")
             start = time.perf_counter()
 
             done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
@@ -419,5 +380,5 @@ class SuperFluxManager:
                 done = len(self.pending_tasks) == 0 and len(self.running_tasks) == 0
 
             end = time.perf_counter()
-            print("=== EXITING WORKFLOW ENVIRONMENT  ===")
-            print(f"Workflow took {(start - end):.4f} seconds to run.")
+            self.logger.info("=== EXITING WORKFLOW ENVIRONMENT  ===")
+            self.logger.info(f"Workflow took {(start - end):.4f} seconds to run.")

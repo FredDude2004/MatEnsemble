@@ -27,11 +27,11 @@
 
 - [x] Update logging to be more industry standard 
 - [x] Refactor Fluxlet to remove global side effects
-- [ ] Add type annotations back to strategies
+- [x] Add type annotations back to strategies
 - [ ] Document all of the code vigorously 
     - [x] Document manager.py
-    - [ ] Document fluxlet.py
-    - [ ] Document strategies/*
+    - [x] Document fluxlet.py
+    - [x] Document strategies/*
 - [ ] Remove all TODOs and HACKs
 
 - [ ] Allow tasks to have other tasks as dependencies
