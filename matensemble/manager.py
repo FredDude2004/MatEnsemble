@@ -81,9 +81,6 @@ class SuperFluxManager:
         Pickles the current state of the program into a file
     check_resources()
         Gets the available resources from Flux's Remote Procedure Call (RPC)
-    setup_logger()
-        Sets up logging for the state of the program to a log file and to
-        standard output
     log_progress()
         Logs the current state of the program, pending_tasks, running_tasks,
         completed_tasks, failed_tasks and a resource count free_cores and

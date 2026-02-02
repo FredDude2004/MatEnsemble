@@ -1,0 +1,61 @@
+matensemble.dynopro.postprocessors package
+==========================================
+
+Submodules
+----------
+
+matensemble.dynopro.postprocessors.bispectrum\_calculator module
+----------------------------------------------------------------
+
+.. automodule:: matensemble.dynopro.postprocessors.bispectrum_calculator
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+matensemble.dynopro.postprocessors.compute\_diffraction module
+--------------------------------------------------------------
+
+.. automodule:: matensemble.dynopro.postprocessors.compute_diffraction
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+matensemble.dynopro.postprocessors.compute\_order\_from\_pairs module
+---------------------------------------------------------------------
+
+.. automodule:: matensemble.dynopro.postprocessors.compute_order_from_pairs
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+matensemble.dynopro.postprocessors.compute\_twist module
+--------------------------------------------------------
+
+.. automodule:: matensemble.dynopro.postprocessors.compute_twist
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+matensemble.dynopro.postprocessors.correlations module
+------------------------------------------------------
+
+.. automodule:: matensemble.dynopro.postprocessors.correlations
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+matensemble.dynopro.postprocessors.ovito\_calculators module
+------------------------------------------------------------
+
+.. automodule:: matensemble.dynopro.postprocessors.ovito_calculators
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: matensemble.dynopro.postprocessors
+   :members:
+   :show-inheritance:
+   :undoc-members:

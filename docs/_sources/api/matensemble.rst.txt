@@ -1,0 +1,53 @@
+matensemble package
+===================
+
+Submodules
+----------
+
+matensemble.fluxlet module
+--------------------------
+
+.. automodule:: matensemble.fluxlet
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+matensemble.logger module
+-------------------------
+
+.. automodule:: matensemble.logger
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+matensemble.manager module
+--------------------------
+
+.. automodule:: matensemble.manager
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+matensemble.matflux module
+--------------------------
+
+.. automodule:: matensemble.matflux
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+matensemble.matfluxGen module
+-----------------------------
+
+.. automodule:: matensemble.matfluxGen
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: matensemble
+   :members:
+   :show-inheritance:
+   :undoc-members:

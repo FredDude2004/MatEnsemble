@@ -1,28 +1,26 @@
 """
-The logger creates a directory that all logs will go into when the user
-runs the program. When the logger is setup it will create a directory named
-<SLURM_JOB_ID>_matensemble_workflow/ and inside of this directory there will
-be the status file and directories for output, logs and errors.
+Logging + status utilities for MatEnsemble.
 
-The status file shows the resource count and the status of the tasks that the
-user will be able to 'watch' during execution to see the status of their program.
-The status should be located at <SLURM_JOB_ID>_matensemble_workflow/status.log.
+This module creates a per-run workflow directory:
 
-Status file format:
-```
-JOBS:      Pending     Running     Completed   Failed
-           {num     }  {num     }  {num     }  {num     }
+.. code-block:: text
 
-RESOURCES: Free Cores Free GPUs
-           {num     } {num     }
-```
+   <JOBID>_matensemble_workflow/
+     status.log
+     logs/
+       <timestamp>_matensemble_workflow.log
+     out/
+       <task-id>/
+         stdout
+         stderr
 
-The log file gets written to <SLURM_JOB_ID>_matensemble_workflow/ that is named
-in the format YYYY-MM-DD_HH-MM-SS_matensemble_workflow.log. This file will have
-everything that the status file has but be more versbose and have timestamps.
+The status file is overwritten on each update so users can monitor progress:
 
-The last thing is the out/ directory that will hold all of the tasks and will
-have all of their output including stdout and stderr.
+.. code-block:: console
+
+   watch -n 1 cat <JOBDIR>/status.log
+
+The verbose log file contains timestamped messages and is always written to disk.
 """
 
 from __future__ import annotations
