@@ -32,7 +32,17 @@
     - [x] Document manager.py
     - [x] Document fluxlet.py
     - [x] Document strategies/*
-- [ ] Remove all TODOs and HACKs
+- [x] Remove all TODOs and HACKs
+
+- [ ] Update the documentation and make sure it has all of the strategies
+- [ ] Make a script to build the documentation 
+- [ ] Remove all artifacts from the repository 
+
+**Add Testing**
+- [ ] Make sure the simple hello world tests work
+- [ ] Figure out what is going on with the GPU tasks
+- [ ] Make some tests that have failures to make sure the failed tasks get logged appropriately 
+- [ ] 
 
 - [ ] Allow tasks to have other tasks as dependencies
 
