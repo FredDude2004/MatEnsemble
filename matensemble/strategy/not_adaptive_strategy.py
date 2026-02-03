@@ -72,5 +72,7 @@ class NonAdaptiveStrategy(FutureProcessingStrategy):
                 )
                 continue
 
+            self.manager.completed_tasks.append(task)
+
             if len(self.manager.completed_tasks) % self.manager.write_restart_freq == 0:
                 self.manager.create_restart_file()

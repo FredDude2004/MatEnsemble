@@ -170,6 +170,7 @@ class AdaptiveStrategy(FutureProcessingStrategy):
                 )
                 continue
 
+            self.manager.completed_tasks.append(task)
             self.adaptive_submit(buffer_time)
 
             if len(self.manager.completed_tasks) % self.manager.write_restart_freq == 0:
