@@ -1,3 +1,12 @@
+"""
+================
+SuperFluxManager
+================
+
+The
+
+"""
+
 from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
 from matensemble.strategy.submission_strategy_base import TaskSubmissionStrategy
 import numpy as np
@@ -297,17 +306,19 @@ class SuperFluxManager:
 
         Runs a "super loop" until there are no more pending tasks and no
         running tasks.
+
         Each loop iteration:
-        1) refreshes available resources
-        2) prints a progress snapshot
-        3) submits new jobs until resources are exhausted using a
-           TaskSubmissionStrategy:
-           - DynoproStrategy if dynopro=True
-           - GPUAffineStrategy if gpus_per_task > 0
-           - CPUAffineStrategy otherwise
-        4) processes completed jobs using a FutureProcessingStrategy:
-           - AdaptiveStrategy if adaptive=True
-           - NonAdaptiveStrategy otherwise
+
+        #. refreshes available resources
+        #. prints a progress snapshot
+        #. submits new jobs until resources are exhausted using a
+        #. TaskSubmissionStrategy:
+            * DynoproStrategy if dynopro=True
+            * GPUAffineStrategy if gpus_per_task > 0
+            * CPUAffineStrategy otherwise
+        #. processes completed jobs using a FutureProcessingStrategy:
+            * AdaptiveStrategy if adaptive=True
+            * NonAdaptiveStrategy otherwise
 
         Parameters
         ----------
@@ -378,4 +389,4 @@ class SuperFluxManager:
 
             end = time.perf_counter()
             self.logger.info("=== EXITING WORKFLOW ENVIRONMENT  ===")
-            self.logger.info(f"Workflow took {(start - end):.4f} seconds to run.")
+            self.logger.info(f"Workflow took {(end - start):.4f} seconds to run.")

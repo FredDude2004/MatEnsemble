@@ -24,3 +24,19 @@ env/
 .idea/
 *.swp
 .DS_Store
+
+# Sphinx / documentation
+docs/build/
+docs/_build/
+docs/source/api/        
+*.doctree
+*.pickle
+*.inv
+
+# Logs 
+*.log
+*.out
+*.err
+core
+core.*
+*.core

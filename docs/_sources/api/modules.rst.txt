@@ -1,7 +1,0 @@
-matensemble
-===========
-
-.. toctree::
-   :maxdepth: 4
-
-   matensemble
