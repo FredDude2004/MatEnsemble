@@ -1,12 +1,3 @@
-"""
-================
-SuperFluxManager
-================
-
-The
-
-"""
-
 from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
 from matensemble.strategy.submission_strategy_base import TaskSubmissionStrategy
 import numpy as np
@@ -300,11 +291,11 @@ class SuperFluxManager:
         For implementing your own strategies you can look at the docs in the
         strategy directory of the matensemble package
 
-        GitHub:
-        Strategy Patter: https://refactoring.guru/design-patterns/strategy
-                         https://en.wikipedia.org/wiki/Design_Patterns
+        * GitHub: https://github.com/Q-CAD/MatEnsemble/blob/main/matensemble/matflux.py
+        * GOF Design Patterns: https://en.wikipedia.org/wiki/Design_Patterns
+        * Strategy Pattern: https://refactoring.guru/design-patterns/strategy
 
-        Runs a "super loop" until there are no more pending tasks and no
+        Runs a 'super loop' until there are no more pending tasks and no
         running tasks.
 
         Each loop iteration:
