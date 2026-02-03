@@ -1,6 +1,3 @@
-
-
-
 [![PyPI version](https://badge.fury.io/py/matensemble.svg)](https://badge.fury.io/py/matensemble)
 [![Documentation Status](https://readthedocs.org/projects/matensemble/badge/?version=latest)](https://matensemble.readthedocs.io/en/latest/?badge=latest)
 <!-- [![Build Status](https://github.com/username/matensemble/workflows/Build/badge.svg)](https://github.com/username/matensemble/actions) -->
@@ -17,6 +14,13 @@ An adaptive and highly asynchronous ensemble simulation workflow manager
 
 - On-the-fly streaming of materials dynamics with custom analysis algorithms
  <img src="images/Cap_2_dynopro.png" alt="on-the-fly dynamics" width="600"/>
+
+## User Guide:
+Open the documentation
+```sh
+<browser-of-choice> docs/index.html
+```
+
 
 ## Installation Guide
 
