@@ -1,4 +1,4 @@
-from matensemble.matfluxGen import SuperFluxManager
+from matensemble.manager import SuperFluxManager
 import numpy as np
 import os
 
