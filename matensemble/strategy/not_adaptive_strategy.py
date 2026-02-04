@@ -40,6 +40,8 @@ class NonAdaptiveStrategy(FutureProcessingStrategy):
             self.manager.futures, timeout=buffer_time
         )
         for fut in completed:
+            self.manager.running_tasks.remove(fut.task)
+
             task = getattr(fut, "task", getattr(fut, "task_", "<unknown>"))
             workdir = Path(
                 getattr(fut, "workdir", self.manager.paths.out_dir / str(task))

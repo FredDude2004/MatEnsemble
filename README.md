@@ -71,8 +71,8 @@ pip install -e .
 ```
 
 **Links to documentation for Ease of Access: **
-* [MatEnsamble Dependency](https://github.com/BagchiS6/AutoPF)
-* [Slurm Documentation]()
+* [MatEnsemble Dependency](https://github.com/BagchiS6/AutoPF)
+* [Slurm Documentation](https://slurm.schedmd.com/documentation.html)
 * [Flux Documentation](https://flux-framework.readthedocs.io/en/latest/guides/learning_guide.html)
 * [Python Flux Guide](https://flux-framework.readthedocs.io/projects/flux-core/en/latest/guide/start.html)
 * [Baseline Super-Computer User Guide](https://docs.cades.olcf.ornl.gov/baseline_user_guide/baseline_user_guide.html)

@@ -117,6 +117,7 @@ class DynoproStrategy(TaskSubmissionStrategy):
             task=task,
             task_args=task_args,
             task_directory=task_dir,
+            base_out_dir=self.manager.paths.out_dir,
         )
 
         return fluxlet.future

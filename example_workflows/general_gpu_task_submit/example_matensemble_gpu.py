@@ -32,11 +32,10 @@ task_command = os.path.abspath(
 master = SuperFluxManager(
     task_list,
     task_command,
-    None,
+    write_restart_freq=5,
     tasks_per_job=1 * np.ones((N_task, 1)),
     cores_per_task=1,
     gpus_per_task=1,
-    write_restart_freq=5,
 )
 
 
