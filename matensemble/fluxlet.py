@@ -24,7 +24,7 @@ def normalize_task_args(task_args):
         return [str(task_args)]
     raise TypeError(
         f"ERROR: Task argument can not be {type(task_args)}. "
-        "Currently supports `list`, `str`, `int`, `float`, `np.int64`, `np.int64`, and `dict` types"
+        "Currently supports `list`, `str`, `int`, `float`, `np.int64`, `np.float64`, and `dict` types"
     )
 
 
