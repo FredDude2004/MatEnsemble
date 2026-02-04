@@ -55,3 +55,4 @@
 
 - [ ] Allow tasks to have other tasks as dependencies
 
+- [ ] Give the README a complete overhaul
