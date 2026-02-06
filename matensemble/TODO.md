@@ -47,6 +47,15 @@
 
 - [ ] Turn Matensemble into a uv project
 - [ ] Build the initial Apptainer container 
+    - [ ] Create the matensemble.def file
+    **--- Def File Spec ---**
+    * The file should be off of a frontier base image use rocky linux version
+    * Install build dependecies of flux-core
+    * Build flux-core from source 
+    * Install build dependencies for flux-sched
+    * Build flux-sched from source 
+    * Export all variables 
+    * Install matensemble
 - [ ] Test the apptainer container 
 
 - [ ] Setup GitHub Actions to automatically build and register the container on code pushes to main branch 
