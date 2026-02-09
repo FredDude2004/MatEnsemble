@@ -1,0 +1,32 @@
+Bootstrap: docker
+From: savannah.ornl.gov/olcf-container-images/cpe:25.03_gnu_ubuntu
+
+%post:
+    apt update
+
+    # Building flux-core
+    wget https://github.com/flux-framework/flux-core/releases/download/v0.81.0/flux-core-0.81.0.tar.gz
+    tar xzf flux-core-0.81.0.tar.gz
+    cd flux-core-0.81.0
+    ./scripts/install-deps-deb.sh
+    ./configure --prefix=$HOME/local
+    make
+    make check 
+    make install
+
+    # Building flux-sched
+    apt install cmake libhwloc-dev libboost-dev libboost-graph-dev libedit-dev libyaml-cpp-dev python3-yaml
+    wget https://github.com/flux-framework/flux-sched/releases/download/v0.48.0/flux-sched-0.48.0.tar.gz
+    tar xzf flux-sched-0.48.0.tar.gz
+    cd flux-sched-0.48.0
+    cmake -B build --preset default
+    cmake --build build
+    cmake --build build -t install
+    ctest --test-dir build
+
+    # Install MatEnsemble
+    pip3 install -i https://test.pypi.org/simple/ matensemble
+
+
+
+%environment

@@ -1,5 +1,5 @@
 import concurrent.futures
-import flux
+import flux.job.executor
 import time
 
 from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
