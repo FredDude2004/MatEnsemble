@@ -30,3 +30,10 @@ flux = [
 [build-system]
 requires = ["uv_build>=0.10.0,<0.11.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "sphinx>=9.1.0",
+    "sphinx-rtd-theme>=3.1.0",
+]

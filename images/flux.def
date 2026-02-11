@@ -1,0 +1,14 @@
+Bootstrap: docker 
+From: savannah.ornl.gov/olcf-container-images/cpe:24.11_gnu_rockylinux
+
+%post:
+    apt update 
+    wget https://github.com/flux-framework/flux-core/releases/download/v0.81.0/flux-core-0.81.0.tar.gz
+    tar xzf flux-core-0.81.0.tar.gz
+    cd flux-core-0.81.0
+    ./scripts/install-deps-deb.sh
+    ./configure --with-flux-security
+    make
+    make install
+    
+%environment

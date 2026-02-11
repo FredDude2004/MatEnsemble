@@ -26,6 +26,7 @@ env/
 .DS_Store
 
 # Sphinx / documentation
+/docs
 docs/build/
 docs/_build/
 docs/source/api/        
