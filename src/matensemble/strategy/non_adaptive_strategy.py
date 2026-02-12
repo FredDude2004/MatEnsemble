@@ -2,8 +2,7 @@
 non_adaptive_strategy.py
 --------------------
 
-The adaptive strategy is a FutureProcessingStrategy that adaptively submits
-tasks as running tasks complete.
+The non-adaptive strategy is a FutureProcessingStrategy that simply processes futures
 """
 
 import concurrent.futures

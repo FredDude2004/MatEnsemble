@@ -1,3 +1,13 @@
+"""
+cpu_affine_strategy.py
+----------------------
+
+Implmentation of the TaskSubmissionStrategy where tasks have an
+affinity towards the CPU. If the gpus_per_task argument in the
+SuperFluxManager.poolexecutor() call is None then this strategy is assumed.
+
+"""
+
 import time
 import flux.job.executor
 

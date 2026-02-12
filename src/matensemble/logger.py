@@ -1,4 +1,7 @@
 """
+logger.py
+---------
+
 Logging + status utilities for MatEnsemble.
 
 This module creates a per-run workflow directory:

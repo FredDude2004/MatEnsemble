@@ -1,14 +1,3 @@
-__author__ = ["Soumendu Bagchi", "Kaleb Duchesneau"]
-__package__ = "matensemble"
-
-from . import manager
-from .manager import SuperFluxManager
-from . import fluxlet
-from . import logger
-from . import strategy
-
-__all__ = ["manager", "fluxlet", "logger", "strategy", "SuperFluxManager"]
-
 """
 MatEnsemble
 
@@ -23,7 +12,18 @@ logs.
 
 The strategy sub-package holds the two Abstract Base Classes TaskSubmissionStrategy
 and FutureProcessingStrategy. (interfaces) and the implementations of them. These
-strategies are used in the SuperFluxManager's poolexecutor method to determine 
-how jobs are submitted and how the Future objects are processed. 
+strategies are used in the SuperFluxManager's poolexecutor method to determine
+how jobs are submitted and how the Future objects are processed.
 
 """
+
+__author__ = ["Soumendu Bagchi", "Kaleb Duchesneau"]
+__package__ = "matensemble"
+
+from . import manager
+from .manager import SuperFluxManager
+from . import fluxlet
+from . import logger
+from . import strategy
+
+__all__ = ["manager", "fluxlet", "logger", "strategy", "SuperFluxManager"]

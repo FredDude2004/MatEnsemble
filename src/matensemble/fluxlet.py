@@ -1,3 +1,11 @@
+"""
+fluxlet.py
+----------
+
+A fluxlet handles the usage of the flux ...
+
+"""
+
 import numpy as np
 import flux.job
 import shlex

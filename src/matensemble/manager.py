@@ -1,3 +1,21 @@
+"""
+manager.py
+----------
+
+The manager holds the core logic of MatEnsemble.
+It handles the four task lists (pending_tasks, running_tasks, completed_tasks,
+failed_tasks), the resource count and the scheduling and processing of tasks
+through the SuperFluxManager object.
+
+The poolexecutor method can take optional arguments of type TaskSubmissionStrategy
+and FutureProcessingStrategy. If these arguments are provided then the
+scheduling loop will use these strategies to submit the tasks and process the tasks,
+if they are not provided the strategies will be infered at run-time.
+
+To see about implementing your own strategies look at the strategy/ sub-package
+
+"""
+
 from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
 from matensemble.strategy.submission_strategy_base import TaskSubmissionStrategy
 import numpy as np
@@ -13,7 +31,7 @@ import sys
 import os
 
 
-from matensemble.strategy.not_adaptive_strategy import NonAdaptiveStrategy
+from matensemble.strategy.non_adaptive_strategy import NonAdaptiveStrategy
 from matensemble.strategy.cpu_affine_strategy import CPUAffineStrategy
 from matensemble.strategy.gpu_affine_strategy import GPUAffineStrategy
 from matensemble.strategy.adaptive_strategy import AdaptiveStrategy

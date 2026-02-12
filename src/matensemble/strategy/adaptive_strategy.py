@@ -1,3 +1,11 @@
+"""
+adaptive_strategy.py
+--------------------
+
+The adaptive strategy is a FutureProcessingStrategy that adaptively submits
+tasks as running tasks complete.
+"""
+
 import concurrent.futures
 import flux.job.executor
 import time

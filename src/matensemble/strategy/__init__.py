@@ -1,31 +1,11 @@
-# matensemble/strategy/__init__.py
-
-from . import submission_strategy_base
-from . import process_futures_strategy_base
-from . import cpu_affine_strategy
-from . import gpu_affine_strategy
-from . import dynopro_strategy
-from . import adaptive_strategy
-from . import not_adaptive_strategy
-
-__all__ = [
-    "submission_strategy_base",
-    "process_futures_strategy_base",
-    "cpu_affine_strategy",
-    "gpu_affine_strategy",
-    "dynopro_strategy",
-    "adaptive_strategy",
-    "not_adaptive_strategy",
-]
-
-
 """
 Strategy implementations for submission and future-processing in MatEnsemble.
 
 `Strategy Pattern <https://refactoring.guru/design-patterns/strategy>`__ algorithms for management of flux tasks.
 
 The original MatEnsemble code was heavily nested inside of a big 'super loop'
-that was nested up to seven times and very difficult to reason about and read.
+that had up to seven levels of indentaion and was very difficult to reason about
+and read.
 
 ``
 while True:
@@ -37,7 +17,7 @@ different ways of submitting tasks and processing futures into their own modules
 Isolating them and making them much easier to maintain and taking the super loop
 down from 145 lines of heavily nested code to just 9 lines.
 
-Inside of the SuperFlux Manager when the poolexecutor method is called, based on
+Inside of the SuperFluxManager when the poolexecutor method is called, based on
 the parameters it is given, it will decide the strategy it will use to submit
 tasks and process futures.
 
@@ -70,3 +50,24 @@ your own strategy it needs to follow the interface::
 
 Following these two interfaces you can add any functionality that you may need.
 """
+
+__author__ = ["Kaleb Duchesneau"]
+__package__ = "strategy"
+
+from . import submission_strategy_base
+from . import process_futures_strategy_base
+from . import cpu_affine_strategy
+from . import gpu_affine_strategy
+from . import dynopro_strategy
+from . import adaptive_strategy
+from . import non_adaptive_strategy
+
+__all__ = [
+    "submission_strategy_base",
+    "process_futures_strategy_base",
+    "cpu_affine_strategy",
+    "gpu_affine_strategy",
+    "dynopro_strategy",
+    "adaptive_strategy",
+    "non_adaptive_strategy",
+]
