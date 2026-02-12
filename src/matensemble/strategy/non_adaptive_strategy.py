@@ -1,6 +1,6 @@
 """
 non_adaptive_strategy.py
---------------------
+------------------------
 
 The non-adaptive strategy is a FutureProcessingStrategy that simply processes futures
 """

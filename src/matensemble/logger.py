@@ -4,9 +4,7 @@ logger.py
 
 Logging + status utilities for MatEnsemble.
 
-This module creates a per-run workflow directory:
-
-.. code-block:: text
+This module creates a per-run workflow directory::
 
    <JOBID>_matensemble_workflow/
      status.log
@@ -17,9 +15,7 @@ This module creates a per-run workflow directory:
          stdout
          stderr
 
-The status file is overwritten on each update so users can monitor progress:
-
-.. code-block:: console
+The status file is overwritten on each update so users can monitor progress::
 
    watch -n 1 cat <JOBDIR>/status.log
 
@@ -190,7 +186,7 @@ def create_workflow_paths(base_dir: str | Path | None = None) -> WorkflowPaths:
 
     Notes
     -----
-    Structure of the output directory:
+    Structure of the output directory::
 
         <SLURM_JOB_ID>_matensemble_workflow/
             |- status.log

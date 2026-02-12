@@ -16,8 +16,6 @@ To see about implementing your own strategies look at the strategy/ sub-package
 
 """
 
-from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
-from matensemble.strategy.submission_strategy_base import TaskSubmissionStrategy
 import numpy as np
 import flux.job
 import os.path
@@ -30,7 +28,8 @@ import copy
 import sys
 import os
 
-
+from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
+from matensemble.strategy.submission_strategy_base import TaskSubmissionStrategy
 from matensemble.strategy.non_adaptive_strategy import NonAdaptiveStrategy
 from matensemble.strategy.cpu_affine_strategy import CPUAffineStrategy
 from matensemble.strategy.gpu_affine_strategy import GPUAffineStrategy
@@ -90,29 +89,6 @@ class SuperFluxManager:
           |-out/
             |-<output_of_workflow>
 
-    Methods
-    -------
-    load_restart(filename)
-        Sets the completed_tasks, running_tasks, pending_tasks and failed_tasks
-        and restarts the ensemble
-    create_restart_file()
-        Pickles the current state of the program into a file
-    check_resources()
-        Gets the available resources from Flux's Remote Procedure Call (RPC)
-    log_progress()
-        Logs the current state of the program, pending_tasks, running_tasks,
-        completed_tasks, failed_tasks and a resource count free_cores and
-        free_gpus
-    poolexecutor(
-        self,
-        task_arg_list,
-        buffer_time=0.5,
-        task_dir_list=None,
-        adaptive=True,
-        dynopro=False,
-    )
-        High-throughput executor implementation
-
     Notes
     -----
     buffer_time is used by strategies both as a polling timeout and as an intentional
@@ -135,29 +111,27 @@ class SuperFluxManager:
         """
         Parameters
         ----------
-        gen_task_list: list
-            A list of tasks to be executed, each element being the task's ID
-            usually integers but could be anything
-        gen_task_cmd: str
-            The executable file that will be executed for each task
-        write_restart_freq: int, optional
-            the number of tasks that should be completed before pickling a
-            restart file
-        tasks_per_job: int, list[int], optional
-            a list of integers representing the sub-tasks that each tasks will have.
-            Could either be an integer (every task will have the same number of sub
-            tasks) or a list of integers. Will default to 1 task_per_job if left out
-        cores_per_task: int, optional
-            The number of CPU cores that each task will be allocated, default is 1
-        gpus_per_task: int, optional
-            The number of GPUs that each task will be allocated, default is 0
-        nnodes: int, optional
-            The number of nodes that will be allocated for the ensemble
-        gpus_per_node: int, optional
-            The number of GPUs that each node has available
-        restart_filename: str, optional
-            Optional if the attribute is given and is a .dat file then the ensemble
-            will start from where it left off
+        gen_task_list : Sequence[Any]
+            A list of task identifiers to be executed. Usually integers, but may be
+            any hashable/serializable identifier.
+        gen_task_cmd : str
+            Executable (or command) to run for each task.
+        write_restart_freq : int, optional
+            Number of tasks that must complete before writing a pickled restart file.
+        tasks_per_job : int or list[int], optional
+            Number of sub-tasks per task. If an int, all tasks use the same value.
+            If a list, it must have one entry per task in `gen_task_list`. Defaults to 1.
+        cores_per_task : int, optional
+            Number of CPU cores allocated per task. Defaults to 1.
+        gpus_per_task : int, optional
+            Number of GPUs allocated per task. Defaults to 0.
+        nnodes : int, optional
+            Number of nodes allocated for the ensemble.
+        gpus_per_node : int, optional
+            Number of GPUs available per node.
+        restart_filename : str, optional
+            Path to a restart file. If provided and points to a ``.dat`` file, the
+            ensemble resumes from the saved state.
 
         """
 
