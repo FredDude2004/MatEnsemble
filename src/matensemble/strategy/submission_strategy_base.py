@@ -4,7 +4,7 @@ different strategy for submitting tasks based on the parameters given to it at
 run time
 """
 
-import flux
+import flux.job.executor
 
 from abc import ABC, abstractmethod
 

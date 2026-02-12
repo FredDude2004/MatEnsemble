@@ -1,5 +1,5 @@
+import flux.job.executor
 import time
-import flux
 
 from matensemble.strategy.submission_strategy_base import TaskSubmissionStrategy
 from matensemble.fluxlet import Fluxlet

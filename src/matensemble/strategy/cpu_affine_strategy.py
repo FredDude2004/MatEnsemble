@@ -1,15 +1,14 @@
 import time
-import flux
+import flux.job.executor
 
 from matensemble.strategy.submission_strategy_base import TaskSubmissionStrategy
 from matensemble.fluxlet import Fluxlet
 
 
-class DynoproStrategy(TaskSubmissionStrategy):
+class CPUAffineStrategy(TaskSubmissionStrategy):
     """
-    Implements the TaskSubmissionStrategy interface. This is esentially the same
-    as the CPUAffineStrategy but it uses the hetero_job_submit rather than the
-    job_submit
+    Implements the TaskSubmissionStrategy interface. This is the most basic
+    implmentation of the interface and also the default.
     """
 
     def __init__(self, manager) -> None:
@@ -17,7 +16,7 @@ class DynoproStrategy(TaskSubmissionStrategy):
         Parameters
         ----------
         manager: SuperFluxManager
-            manages resources and calls this method based on its strategy
+            A reference to a SuperFluxManager object
 
         Return
         ------
@@ -50,12 +49,13 @@ class DynoproStrategy(TaskSubmissionStrategy):
         while (
             self.manager.tasks_per_job
             and self.manager.free_cores
-            >= self.manager.tasks_per_job[0] * self.manager.cores_per_task
+            >= int(self.manager.tasks_per_job[0]) * self.manager.cores_per_task
             and len(self.manager.pending_tasks) > 0
         ):
             cur_tasks_per_job = int(self.manager.tasks_per_job[0])
             needed_cores = cur_tasks_per_job * self.manager.cores_per_task
 
+            # use double ended queue and  popleft for O(1) time complexity
             cur_task = self.manager.pending_tasks.popleft()
             cur_task_args = task_arg_list.popleft()
 
@@ -78,8 +78,7 @@ class DynoproStrategy(TaskSubmissionStrategy):
         self, task, tasks_per_job, task_args, task_dir
     ) -> flux.job.executor.FluxExecutorFuture:
         """
-        Creates a fluxlet object and submits the task with the hetero_job_submit
-        rather than the regular submit
+        Creates a fluxlet object and submits the task
 
         Parameters
         ----------
@@ -99,24 +98,18 @@ class DynoproStrategy(TaskSubmissionStrategy):
             task
         """
 
-        if self.manager.nnodes is None or self.manager.gpus_per_node is None:
-            raise ValueError(
-                "ERROR: For dynopro provisioning, nnodes and gpus_per_node can not be None"
-            )
         fluxlet = Fluxlet(
             self.manager.flux_handle,
             tasks_per_job,
             self.manager.cores_per_task,
             self.manager.gpus_per_task,
         )
-        fluxlet.hetero_job_submit(
+        fluxlet.job_submit(
             self.manager.executor,
-            nnodes=self.manager.nnodes,
-            gpus_per_node=self.manager.gpus_per_node,
-            command=self.manager.gen_task_cmd,
-            task=task,
-            task_args=task_args,
-            task_directory=task_dir,
+            self.manager.gen_task_cmd,
+            task,
+            task_args,
+            task_dir,
             base_out_dir=self.manager.paths.out_dir,
         )
 
