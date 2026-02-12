@@ -269,7 +269,7 @@ wheels = [
 
 [[package]]
 name = "flux-python"
-version = "0.81.0"
+version = "0.66.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cffi" },

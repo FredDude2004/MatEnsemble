@@ -79,15 +79,14 @@
       export PATH="/usr/local/bin:${PATH}"
       uv --version
 
-      # build MatEnsemble
+      # clone MatEnsemble
       cd /tmp
-      git clone https://github.com/FredDude2004/MatEnsemble.git
+      rm -rf MatEnsemble
+      git clone --depth 1 https://github.com/FredDude2004/MatEnsemble.git
       cd MatEnsemble
 
-      uv venv /opt/venv
-      export VIRTUAL_ENV=/opt/venv
-      export PATH="$VIRTUAL_ENV/bin:$PATH"
-
+      # install all dependencies and matensemble
+      export UV_PROJECT_ENVIRONMENT=/opt/venv
       uv sync --all-extras --dev
 
 
@@ -97,7 +96,6 @@
       export PATH="${PREFIX}/bin:${VIRTUAL_ENV}/bin:${PATH}"
       export LD_LIBRARY_PATH="${PREFIX}/lib:${PREFIX}/lib64:${LD_LIBRARY_PATH:-}"
       export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${PREFIX}/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"
-      export PYTHONPATH="${PREFIX}/lib/flux/python3.12"
 
   %runscript
       # put a little echo message here that tells users how to use the image
