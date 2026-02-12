@@ -96,6 +96,7 @@
       export PATH="${PREFIX}/bin:${VIRTUAL_ENV}/bin:${PATH}"
       export LD_LIBRARY_PATH="${PREFIX}/lib:${PREFIX}/lib64:${LD_LIBRARY_PATH:-}"
       export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${PREFIX}/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"
+      unset PYTHONSTARTUP
 
   %runscript
       # put a little echo message here that tells users how to use the image
