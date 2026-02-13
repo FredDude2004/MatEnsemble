@@ -84,7 +84,6 @@ From: savannah.ornl.gov/olcf-container-images/cpe:25.03_gnu_ubuntu
 
 %environment
     export PREFIX=/opt/flux
-    export VIRTUAL_ENV=/opt/venv
     export PATH="/opt/lammps/bin:${PREFIX}/bin:${PATH}"
     export LD_LIBRARY_PATH="/opt/rocm/lib/llvm/lib:${PREFIX}/lib:${PREFIX}/lib64:${LD_LIBRARY_PATH:-}"
     export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${PREFIX}/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"

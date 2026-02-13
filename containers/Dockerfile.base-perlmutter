@@ -1,9 +1,13 @@
-# Dockerfile.base
-FROM savannah.ornl.gov/olcf-container-images/cpe:25.03_gnu_ubuntu
+# Dockerfile.base-perlmutter
+FROM docker.io/nersc/base_cuda_mpich:11.8x4.2.2
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV CUDA_INSTALL_PATH "/usr/local/cuda-11.8/targets/x86_64-linux"
+ENV MPI_HOME "/opt/mpich/install"
 
 SHELL ["/bin/bash", "-lc"]
 
-# --- System deps ---
+# dependencies for flux-core and flux-sched
 RUN apt-get update && apt-get install -y --no-install-recommends \
     autoconf \
     automake \
@@ -48,16 +52,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
  && rm -rf /var/lib/apt/lists/*
 
-# --- Flux install prefix + runtime env (equivalent to %environment) ---
 ENV PREFIX=/opt/flux
-ENV VIRTUAL_ENV=/opt/venv
 
-# Put LAMMPS and Flux on PATH; keep your LD_LIBRARY_PATH / PKG_CONFIG_PATH behavior.
-ENV PATH="/opt/lammps/bin:${PREFIX}/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/opt/rocm/lib/llvm/lib:${PREFIX}/lib:${PREFIX}/lib64:${LD_LIBRARY_PATH}"
-ENV PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${PREFIX}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
-
-# --- Build flux-core ---
+# build flux-core
 RUN cd /tmp \
  && wget -q https://github.com/flux-framework/flux-core/releases/download/v0.66.0/flux-core-0.66.0.tar.gz \
  && tar xzf flux-core-0.66.0.tar.gz \
@@ -67,7 +64,7 @@ RUN cd /tmp \
  && make install \
  && rm -rf /tmp/flux-core-0.66.0 /tmp/flux-core-0.66.0.tar.gz
 
-# --- Build flux-sched ---
+# build flux-sched
 RUN cd /tmp \
  && wget -q https://github.com/flux-framework/flux-sched/releases/download/v0.36.1/flux-sched-0.36.1.tar.gz \
  && tar xzf flux-sched-0.36.1.tar.gz \
@@ -79,7 +76,7 @@ RUN cd /tmp \
  && cmake --build build -t install \
  && rm -rf /tmp/flux-sched-0.36.1 /tmp/flux-sched-0.36.1.tar.gz
 
-# --- Build LAMMPS ---
+# build LAMMPS
 RUN cd /tmp \
  && wget -q https://github.com/lammps/lammps/archive/refs/tags/stable_2Aug2023_update3.tar.gz \
  && tar xzf stable_2Aug2023_update3.tar.gz \
@@ -95,3 +92,8 @@ RUN cd /tmp \
       /tmp/stable_2Aug2023_update3.tar.gz \
       /tmp/lammps-stable_2Aug2023_update3 \
       /tmp/lammps_build
+
+ENV PATH="/opt/lammps/bin:${PREFIX}/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/rocm/lib/llvm/lib:${PREFIX}/lib:${PREFIX}/lib64:${LD_LIBRARY_PATH}"
+ENV PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${PREFIX}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
+

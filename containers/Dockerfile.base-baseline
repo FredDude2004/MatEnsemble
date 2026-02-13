@@ -1,0 +1,96 @@
+# Dockerfile.base-baseline
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND noninteractive
+
+SHELL ["/bin/bash", "-lc"]
+
+# dependencies for flux-core and flux-sched
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autoconf \
+    automake \
+    libtool \
+    make \
+    pkg-config \
+    libc6-dev \
+    libzmq3-dev \
+    uuid-dev \
+    libjansson-dev \
+    liblz4-dev \
+    libarchive-dev \
+    libhwloc-dev \
+    libsqlite3-dev \
+    lua5.1 \
+    liblua5.1-dev \
+    lua-posix \
+    python3-dev \
+    python3-cffi \
+    python3-ply \
+    python3-setuptools \
+    python3-yaml \
+    python3-sphinx \
+    aspell \
+    aspell-en \
+    time \
+    valgrind \
+    jq \
+    build-essential \
+    ninja-build \
+    cmake \
+    pkg-config \
+    libboost-all-dev \
+    libboost-dev \
+    libboost-graph-dev \
+    python3-jsonschema \
+    libyaml-cpp-dev \
+    libedit-dev \
+    curl \
+    git \
+    wget \
+ && rm -rf /var/lib/apt/lists/*
+
+ENV PREFIX=/opt/flux
+
+# build flux-core
+RUN cd /tmp \
+ && wget -q https://github.com/flux-framework/flux-core/releases/download/v0.66.0/flux-core-0.66.0.tar.gz \
+ && tar xzf flux-core-0.66.0.tar.gz \
+ && cd flux-core-0.66.0 \
+ && ./configure --prefix="${PREFIX}" \
+ && make -j"$(nproc)" \
+ && make install \
+ && rm -rf /tmp/flux-core-0.66.0 /tmp/flux-core-0.66.0.tar.gz
+
+# build flux-sched
+RUN cd /tmp \
+ && wget -q https://github.com/flux-framework/flux-sched/releases/download/v0.36.1/flux-sched-0.36.1.tar.gz \
+ && tar xzf flux-sched-0.36.1.tar.gz \
+ && cd flux-sched-0.36.1 \
+ && cmake -S . -B build \
+      -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+      -DCMAKE_PREFIX_PATH="${PREFIX}" \
+ && cmake --build build -j"$(nproc)" \
+ && cmake --build build -t install \
+ && rm -rf /tmp/flux-sched-0.36.1 /tmp/flux-sched-0.36.1.tar.gz
+
+# build LAMMPS
+RUN cd /tmp \
+ && wget -q https://github.com/lammps/lammps/archive/refs/tags/stable_2Aug2023_update3.tar.gz \
+ && tar xzf stable_2Aug2023_update3.tar.gz \
+ && cmake -S lammps-stable_2Aug2023_update3/cmake -B lammps_build \
+      -D CMAKE_INSTALL_PREFIX=/opt/lammps \
+      -D PKG_KOKKOS=yes \
+      -D Kokkos_ARCH_HOSTARCH=yes \
+      -D Kokkos_ARCH_GPUARCH=yes \
+      -D Kokkos_ENABLE_HIP=yes \
+ && cmake --build lammps_build --target install -j8 \
+ && rm -rf \
+      /tmp/stable_2Aug2023_update3.tar.gz \
+      /tmp/lammps-stable_2Aug2023_update3 \
+      /tmp/lammps_build
+
+ENV PATH="/opt/lammps/bin:${PREFIX}/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/rocm/lib/llvm/lib:${PREFIX}/lib:${PREFIX}/lib64:${LD_LIBRARY_PATH}"
+ENV PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${PREFIX}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
+
+
