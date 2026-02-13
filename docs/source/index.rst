@@ -10,4 +10,7 @@ MatEnsemble Documentation
    :maxdepth: 2
    :caption: Contents:
 
+   overview
+   quickstart
+   tutorials
    api/modules
