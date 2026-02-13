@@ -45,9 +45,9 @@
 
 ### Find Solution For Distribution 
 
-- [ ] Turn Matensemble into a uv project
-- [ ] Build the initial Apptainer container 
-    - [ ] Create the matensemble.def file
+- [x] Turn Matensemble into a uv project
+- [x] Build the initial Apptainer container 
+    - [x] Create the matensemble.def file
     **--- Def File Spec ---**
     * The file should be off of a frontier base image use rocky linux version
     * Install build dependecies of flux-core
@@ -56,12 +56,15 @@
     * Build flux-sched from source 
     * Export all variables 
     * Install matensemble
-- [ ] Test the apptainer container 
+- [x] Test the apptainer container 
 
-- [ ] Setup GitHub Actions to automatically build and register the container on code pushes to main branch 
-- [ ] Test the changes 
+**--- Setup GitHub Actions ---**
+- [ ] Action to build frontier Singularity Image Format file
+- [ ] Action to build Docker Image and Upload to GitHub Container Registry
+- [ ] Action to upload package to PyPI with 
+- [ ] Action to build and publish the Documentation
 
-
-- [ ] Allow tasks to have other tasks as dependencies
-
+**--- Test CI/CD ---**
+- [ ] Refactor to be built around Task/Job Objects
+- [ ] Implement a strategy that allows for tasks to have dependencies
 - [ ] Give the README a complete overhaul

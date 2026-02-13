@@ -68,8 +68,8 @@ From: savannah.ornl.gov/olcf-container-images/cpe:25.03_gnu_ubuntu
     cd flux-sched-0.36.1
 
     cmake -S . -B build \
-      -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
-      -DCMAKE_PREFIX_PATH="${PREFIX}"
+    -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+    -DCMAKE_PREFIX_PATH="${PREFIX}"
     cmake --build build
     cmake --build build -t install
 
@@ -78,15 +78,13 @@ From: savannah.ornl.gov/olcf-container-images/cpe:25.03_gnu_ubuntu
     wget https://github.com/lammps/lammps/archive/refs/tags/stable_2Aug2023_update3.tar.gz
     tar xzf stable_2Aug2023_update3.tar.gz
     cmake -S lammps-stable_2Aug2023_update3/cmake -B lammps_build -D CMAKE_INSTALL_PREFIX=/opt/lammps -D CMAKE_CXX_COMPILER=hipcc \
-		-D PKG_KOKKOS=yes -D Kokkos_ARCH_HOSTARCH=yes -D Kokkos_ARCH_GPUARCH=yes -D Kokkos_ENABLE_HIP=yes
+      -D PKG_KOKKOS=yes -D Kokkos_ARCH_HOSTARCH=yes -D Kokkos_ARCH_GPUARCH=yes -D Kokkos_ENABLE_HIP=yes
     cmake --build lammps_build --target install -j8
     rm -r stable_2Aug2023_update3.tar.gz lammps-stable_2Aug2023_update3 lammps_build
 
 %environment
     export PREFIX=/opt/flux
     export VIRTUAL_ENV=/opt/venv
-    export PATH="${PREFIX}/bin:${PATH}"
-    export LD_LIBRARY_PATH="${PREFIX}/lib:${PREFIX}/lib64:${LD_LIBRARY_PATH:-}"
+    export PATH="/opt/lammps/bin:${PREFIX}/bin:${PATH}"
+    export LD_LIBRARY_PATH="/opt/rocm/lib/llvm/lib:${PREFIX}/lib:${PREFIX}/lib64:${LD_LIBRARY_PATH:-}"
     export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${PREFIX}/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"
-
-
