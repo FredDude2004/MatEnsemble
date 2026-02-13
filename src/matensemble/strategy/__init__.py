@@ -7,11 +7,6 @@ The original MatEnsemble code was heavily nested inside of a big 'super loop'
 that had up to seven levels of indentaion and was very difficult to reason about
 and read.
 
-``
-while True:
-    # ...
-``
-
 To solve this issue we implemented the 'Strategy Pattern' seperating the
 different ways of submitting tasks and processing futures into their own modules.
 Isolating them and making them much easier to maintain and taking the super loop

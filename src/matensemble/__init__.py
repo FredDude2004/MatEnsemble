@@ -21,9 +21,7 @@ __author__ = ["Soumendu Bagchi", "Kaleb Duchesneau"]
 __package__ = "matensemble"
 
 from . import manager
-from .manager import SuperFluxManager
 from . import fluxlet
 from . import logger
-from . import strategy
 
-__all__ = ["manager", "fluxlet", "logger", "strategy", "SuperFluxManager"]
+__all__ = ["manager", "fluxlet", "logger"]
