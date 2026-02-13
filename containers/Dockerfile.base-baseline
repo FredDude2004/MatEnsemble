@@ -1,96 +1,97 @@
-# Dockerfile.base-baseline
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
-ENV DEBIAN_FRONTEND noninteractive
-
+ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-lc"]
 
-# dependencies for flux-core and flux-sched
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    autoconf \
-    automake \
-    libtool \
-    make \
-    pkg-config \
-    libc6-dev \
-    libzmq3-dev \
-    uuid-dev \
-    libjansson-dev \
-    liblz4-dev \
-    libarchive-dev \
-    libhwloc-dev \
-    libsqlite3-dev \
-    lua5.1 \
-    liblua5.1-dev \
-    lua-posix \
-    python3-dev \
-    python3-cffi \
-    python3-ply \
-    python3-setuptools \
-    python3-yaml \
-    python3-sphinx \
-    aspell \
-    aspell-en \
-    time \
-    valgrind \
-    jq \
-    build-essential \
-    ninja-build \
-    cmake \
-    pkg-config \
-    libboost-all-dev \
-    libboost-dev \
-    libboost-graph-dev \
-    python3-jsonschema \
-    libyaml-cpp-dev \
-    libedit-dev \
-    curl \
-    git \
-    wget \
- && rm -rf /var/lib/apt/lists/*
+ARG PYTHON_VERSION=3.12.8
+ARG FLUX_CORE_VER=0.66.0
+ARG FLUX_SCHED_VER=0.36.1
+ARG LAMMPS_TAG=stable_2Aug2023_update3
 
 ENV PREFIX=/opt/flux
+ENV LAMMPS_PREFIX=/opt/lammps
 
-# build flux-core
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl wget git \
+    xz-utils zstd \
+    build-essential ninja-build cmake pkg-config \
+    autoconf automake libtool make \
+    libc6-dev libzmq3-dev uuid-dev libjansson-dev liblz4-dev libarchive-dev \
+    libhwloc-dev libsqlite3-dev \
+    lua5.1 liblua5.1-dev lua-posix \
+    python3-dev python3-cffi python3-ply python3-setuptools python3-yaml python3-sphinx \
+    python3-jsonschema \
+    aspell aspell-en time valgrind jq \
+    libmpich-dev \
+    libboost-all-dev libboost-dev libboost-graph-dev \
+    libyaml-cpp-dev libedit-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+# uv + pinned Python + venv
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
+ENV PATH="/usr/local/bin:${PATH}"
+RUN uv python install ${PYTHON_VERSION} \
+ && uv venv /opt/venv --python ${PYTHON_VERSION}
+
+ENV VIRTUAL_ENV=/opt/venv
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+
+# Build flux-core
 RUN cd /tmp \
- && wget -q https://github.com/flux-framework/flux-core/releases/download/v0.66.0/flux-core-0.66.0.tar.gz \
- && tar xzf flux-core-0.66.0.tar.gz \
- && cd flux-core-0.66.0 \
+ && wget -q https://github.com/flux-framework/flux-core/releases/download/v${FLUX_CORE_VER}/flux-core-${FLUX_CORE_VER}.tar.gz \
+ && tar xzf flux-core-${FLUX_CORE_VER}.tar.gz \
+ && cd flux-core-${FLUX_CORE_VER} \
  && ./configure --prefix="${PREFIX}" \
  && make -j"$(nproc)" \
  && make install \
- && rm -rf /tmp/flux-core-0.66.0 /tmp/flux-core-0.66.0.tar.gz
+ && rm -rf /tmp/flux-core-${FLUX_CORE_VER} /tmp/flux-core-${FLUX_CORE_VER}.tar.gz
 
-# build flux-sched
+ENV PATH="${PREFIX}/bin:${PATH}"
+ENV LD_LIBRARY_PATH="${PREFIX}/lib:${PREFIX}/lib64:${LD_LIBRARY_PATH}"
+ENV PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${PREFIX}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
+
+# Build flux-sched
 RUN cd /tmp \
- && wget -q https://github.com/flux-framework/flux-sched/releases/download/v0.36.1/flux-sched-0.36.1.tar.gz \
- && tar xzf flux-sched-0.36.1.tar.gz \
- && cd flux-sched-0.36.1 \
+ && wget -q https://github.com/flux-framework/flux-sched/releases/download/v${FLUX_SCHED_VER}/flux-sched-${FLUX_SCHED_VER}.tar.gz \
+ && tar xzf flux-sched-${FLUX_SCHED_VER}.tar.gz \
+ && cd flux-sched-${FLUX_SCHED_VER} \
  && cmake -S . -B build \
       -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
       -DCMAKE_PREFIX_PATH="${PREFIX}" \
  && cmake --build build -j"$(nproc)" \
  && cmake --build build -t install \
- && rm -rf /tmp/flux-sched-0.36.1 /tmp/flux-sched-0.36.1.tar.gz
+ && rm -rf /tmp/flux-sched-${FLUX_SCHED_VER} /tmp/flux-sched-${FLUX_SCHED_VER}.tar.gz
 
-# build LAMMPS
-RUN cd /tmp \
- && wget -q https://github.com/lammps/lammps/archive/refs/tags/stable_2Aug2023_update3.tar.gz \
- && tar xzf stable_2Aug2023_update3.tar.gz \
- && cmake -S lammps-stable_2Aug2023_update3/cmake -B lammps_build \
-      -D CMAKE_INSTALL_PREFIX=/opt/lammps \
-      -D PKG_KOKKOS=yes \
-      -D Kokkos_ARCH_HOSTARCH=yes \
-      -D Kokkos_ARCH_GPUARCH=yes \
-      -D Kokkos_ENABLE_HIP=yes \
- && cmake --build lammps_build --target install -j8 \
- && rm -rf \
-      /tmp/stable_2Aug2023_update3.tar.gz \
-      /tmp/lammps-stable_2Aug2023_update3 \
-      /tmp/lammps_build
+# Build LAMMPS (CPU) + install python package into /opt/venv
+RUN set -euo pipefail; \
+    cd /tmp; \
+    wget -q https://github.com/lammps/lammps/archive/refs/tags/${LAMMPS_TAG}.tar.gz; \
+    tar xzf ${LAMMPS_TAG}.tar.gz; \
+    SRC="/tmp/lammps-${LAMMPS_TAG}"; \
+    cmake -S "${SRC}/cmake" -B lammps_build \
+      -D CMAKE_INSTALL_PREFIX="${LAMMPS_PREFIX}" \
+      -D CMAKE_BUILD_TYPE=Release \
+      -D BUILD_SHARED_LIBS=ON \
+      -D BUILD_MPI=ON \
+      -D PKG_KOKKOS=ON \
+      -D Kokkos_ENABLE_OPENMP=ON \
+      -D Kokkos_ARCH_NATIVE=ON \
+      -D PKG_PYTHON=ON \
+      -D PKG_MOLECULE=ON -D PKG_KSPACE=ON -D PKG_BODY=ON -D PKG_RIGID=ON \
+      -D PKG_MC=ON -D PKG_MANYBODY=ON -D PKG_REAXFF=ON -D PKG_REPLICA=ON \
+      -D PKG_QEQ=ON -D PKG_INTERLAYER=ON \
+      -D MLIAP_ENABLE_PYTHON=ON -D PKG_ML-SNAP=ON -D PKG_ML-IAP=ON -D PKG_ML-PACE=ON -D PKG_SPIN=ON; \
+    cmake --build lammps_build -j"$(nproc)"; \
+    cmake --build lammps_build --target install -j"$(nproc)"; \
+    mkdir -p "${SRC}/python/lammps"; \
+    cp -a lammps_build/liblammps*.so* "${SRC}/python/lammps/" || true; \
+    uv pip install --no-deps "${SRC}/python"; \
+    rm -rf /tmp/${LAMMPS_TAG}.tar.gz "${SRC}" /tmp/lammps_build
 
-ENV PATH="/opt/lammps/bin:${PREFIX}/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/opt/rocm/lib/llvm/lib:${PREFIX}/lib:${PREFIX}/lib64:${LD_LIBRARY_PATH}"
-ENV PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${PREFIX}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
+ENV PATH="/opt/lammps/bin:/opt/flux/bin:/opt/venv/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/lammps/lib:/opt/lammps/lib64:/opt/flux/lib:/opt/flux/lib64:${LD_LIBRARY_PATH}"
+ENV LAMMPS_LIBRARY="/opt/lammps/lib/liblammps.so"
 
-
+RUN /opt/venv/bin/python -c "import sys; assert sys.version_info >= (3,12); import lammps; print('python ok:', sys.version); print('lammps ok:', lammps.__file__)" \
+ && flux --version | grep -q "${FLUX_CORE_VER}"
