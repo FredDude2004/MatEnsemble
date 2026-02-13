@@ -52,7 +52,6 @@ Following these two interfaces you can add any functionality that you may need.
 """
 
 __author__ = ["Kaleb Duchesneau"]
-__package__ = "strategy"
 
 from . import submission_strategy_base
 from . import process_futures_strategy_base
