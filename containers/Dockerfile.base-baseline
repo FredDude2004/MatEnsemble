@@ -26,7 +26,7 @@ ENV VIRTUAL_ENV=/opt/venv
 ENV FLUX_PREFIX=/opt/flux
 ENV LAMMPS_PREFIX=/opt/lammps
 
-# 
+# setup venv
 RUN python3 -m venv "${VIRTUAL_ENV}" \
  && "${VIRTUAL_ENV}/bin/python" -m pip install --no-cache-dir -U pip setuptools wheel \
  && "${VIRTUAL_ENV}/bin/python" -m pip install --no-cache-dir cffi PyYAML ply jsonschema
@@ -90,13 +90,13 @@ RUN set -euo pipefail; \
           "${SRC}/cmake"; \
     make -j"$(nproc)"; \
     make install; \
-    \
+
     # install the python package into the venv 
     "${VIRTUAL_ENV}/bin/python" "${SRC}/python/install.py" \
         -p "${SRC}/python/lammps" \
         -l "${LAMMPS_PREFIX}/lib/liblammps.so" \
         -v "${SRC}/src/version.h"; \
-    \
+
     rm -rf /tmp/lammps.tgz "${SRC}" /tmp/lammps_build
 
 # quick test of lammps and flux bindings
@@ -105,8 +105,8 @@ RUN set -euo pipefail; \
     "${VIRTUAL_ENV}/bin/python" -c "import flux; print('flux:', flux.__file__)"; \
     "${VIRTUAL_ENV}/bin/python" -c "import lammps; print('lammps:', lammps.__file__)"
 
-FROM python:3.12.12-slim-trixie
 
+FROM python:3.12.12-slim-trixie
 ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 
