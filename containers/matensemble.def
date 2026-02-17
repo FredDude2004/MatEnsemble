@@ -47,3 +47,4 @@
 
   module load olcf-container-tools
   module load apptainer-enable-mpi apptainer-enable-gpu
+  

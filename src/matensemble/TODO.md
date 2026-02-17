@@ -58,13 +58,21 @@
     * Install matensemble
 - [x] Test the apptainer container 
 
+**--- Build Base Images ---**
+- [x] Build Base Image for Baseline
+- [ ] Build Base Image for Frontier
+- [ ] Build Base Image for Perlmutter
+- [ ] Push images to GitHub Container Registry
+- [ ] Build MatEnsemble Images with each base image
+- [ ] Test Images on each respective system
+
 **--- Setup GitHub Actions ---**
-- [ ] Action to build frontier Singularity Image Format file
-- [ ] Action to build Docker Image and Upload to GitHub Container Registry
-- [ ] Action to upload package to PyPI with 
-- [ ] Action to build and publish the Documentation
+- [ ] Setup Matrix build action to build MatEnsemble images for baseline, frontier, and perlmutter and push them to ghcr
+- [ ] Setup action to build with uv and publish with uv 
+- [ ] Setup action to build docs and publish them
 
 **--- Test CI/CD ---**
 - [ ] Refactor to be built around Task/Job Objects
 - [ ] Implement a strategy that allows for tasks to have dependencies
+- [ ] Update docs accordingly 
 - [ ] Give the README a complete overhaul
