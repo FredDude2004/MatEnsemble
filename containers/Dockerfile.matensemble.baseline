@@ -21,10 +21,10 @@ RUN set -euo pipefail; \
     rm -rf MatEnsemble; \
     git clone --depth 1 https://github.com/FredDude2004/MatEnsemble.git; \
     cd MatEnsemble; \
-    uv sync --extra flux --no-editable
+    uv export --format requirements.txt --output-file requirements.txt; \ 
+    uv pip install -r requirements.txt
 
-ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+ENV PATH="/opt/venv/bin:${PATH}"
 
 
 
