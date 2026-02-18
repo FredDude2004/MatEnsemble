@@ -142,7 +142,7 @@ COPY --from=builder /opt/venv /opt/venv
 COPY --from=builder /opt/lammps /opt/lammps
 
 ENV PATH="/opt/flux/bin:/opt/venv/bin:/opt/lammps/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/opt/flux/lib:/opt/flux/lib64:/opt/lammps/lib:/opt/lammps/lib64"
+ENV LD_LIBRARY_PATH="/opt/flux/lib:/opt/flux/lib64:/opt/lammps/lib:/opt/lammps/lib64:/opt/rocm/lib/llvm/lib:${LD_LIBRARY_PATH}"
 ENV LAMMPS_LIBRARY="/opt/lammps/lib/liblammps.so"
 
 # quick test of lammps and flux bindings

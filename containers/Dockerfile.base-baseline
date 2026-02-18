@@ -125,13 +125,9 @@ COPY --from=builder /opt/flux /opt/flux
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=builder /opt/lammps /opt/lammps
 
-ENV VIRTUAL_ENV=/opt/venv
-ENV FLUX_PREFIX=/opt/flux
-ENV LAMMPS_PREFIX=/opt/lammps
-
-ENV PATH="${FLUX_PREFIX}/bin:${VIRTUAL_ENV}/bin:${LAMMPS_PREFIX}/bin:${PATH}"
-ENV LD_LIBRARY_PATH="${FLUX_PREFIX}/lib:${FLUX_PREFIX}/lib64:${LAMMPS_PREFIX}/lib:${LAMMPS_PREFIX}/lib64"
-ENV LAMMPS_LIBRARY="${LAMMPS_PREFIX}/lib/liblammps.so"
+ENV PATH="/opt/flux/bin:/opt/venv/bin:/opt/lammps/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/flux/lib:/opt/flux/lib64:/opt/lammps/lib:/opt/lammps/lib64:/opt/rocm/lib/llvm/lib:${LD_LIBRARY_PATH}"
+ENV LAMMPS_LIBRARY="/opt/lammps/lib/liblammps.so"
 
 # quick test of lammps and flux bindings
 RUN set -euo pipefail; \
