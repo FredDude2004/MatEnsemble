@@ -9,7 +9,7 @@ on:
       - "src/**"
       - "pyproject.toml"
       - "uv.lock"
-      - ".github/workflows/containers-dev.yml"
+      - ".github/workflows/dev-containers.yaml"
 
 permissions:
   contents: read
