@@ -22,14 +22,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-tags: false
+
       - id: check
         run: |
-          git fetch origin main --tags
+          git fetch --no-tags origin main
           if git merge-base --is-ancestor "${GITHUB_SHA}" "origin/main"; then
             echo "ok=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Tag commit is not on origin/main; skipping release."
+            echo "Tag commit is not on origin/main; skipping publish."
             echo "ok=false" >> "$GITHUB_OUTPUT"
           fi
 
