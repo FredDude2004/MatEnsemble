@@ -74,6 +74,10 @@ autodoc_mock_imports = [
     "flux",
     "flux.job",
     "mpi4py",
+    "mpi4py.MPI",
     "lammps",
     "ovito",
+    "ovito.io",
+    "ovito.data",
+    "ovito.pipeline",
 ]
