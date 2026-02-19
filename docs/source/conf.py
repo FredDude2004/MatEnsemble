@@ -8,8 +8,16 @@
 
 import os
 import sys
+import importlib
 
 sys.path.insert(0, os.path.abspath("../../src"))
+
+for m in ["matensemble.logger", "matensemble.manager", "matensemble.fluxlet"]:
+    try:
+        importlib.import_module(m)
+        print(f"[sphinx] imported {m}")
+    except Exception as e:
+        print(f"[sphinx] FAILED importing {m}: {e!r}")
 
 project = "MatEnsemble"
 copyright = "2026, Soumendu Bagchi, Kaleb Duchesneau"
@@ -65,25 +73,25 @@ autodoc_typehints = "description"
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 
-# autodoc_mock_imports = [
-#     "flux",
-#     "flux.job",
-#     "mpi4py",
-#     "mpi4py.MPI",
-#     "lammps",
-#     "numpy",
-#     "pandas",
-#     "torch",
-#     "scipy",
-#     "sklearn",
-#     "matplotlib",
-#     "matplotlib.pyplot",
-#     "ase",
-#     "pymatgen",
-#     "seaborn",
-#     "ovito",
-#     "ovito.io",
-#     "ovito.data",
-#     "ovito.pipeline",
-#     "redis",
-# ]
+autodoc_mock_imports = [
+    "flux",
+    "flux.job",
+    "mpi4py",
+    "mpi4py.MPI",
+    "lammps",
+    "numpy",
+    "pandas",
+    "torch",
+    "scipy",
+    "sklearn",
+    "matplotlib",
+    "matplotlib.pyplot",
+    "ase",
+    "pymatgen",
+    "seaborn",
+    "ovito",
+    "ovito.io",
+    "ovito.data",
+    "ovito.pipeline",
+    "redis",
+]
