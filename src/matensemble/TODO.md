@@ -64,12 +64,13 @@
 - [x] Build Base Image for Perlmutter
 - [x] Push images to GitHub Container Registry
 - [x] Build MatEnsemble Images with each base image
-- [ ] Test Images on each respective system
+- [x] Test Images on each respective system
+- [ ] NOTE: Come back later -- Test Perlmutter Image
 
 **--- Setup GitHub Actions ---**
 - [ ] Setup Matrix build action to build MatEnsemble images for baseline, frontier, and perlmutter and push them to ghcr
 - [ ] Setup action to build with uv and publish with uv 
-- [ ] Setup action to build docs and publish them
+- [x] Setup action to build docs and publish them
 
 **--- Test CI/CD ---**
 - [ ] Refactor to be built around Task/Job Objects

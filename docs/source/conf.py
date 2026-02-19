@@ -8,16 +8,8 @@
 
 import os
 import sys
-import importlib
 
 sys.path.insert(0, os.path.abspath("../../src"))
-
-for m in ["matensemble.logger", "matensemble.manager", "matensemble.fluxlet"]:
-    try:
-        importlib.import_module(m)
-        print(f"[sphinx] imported {m}")
-    except Exception as e:
-        print(f"[sphinx] FAILED importing {m}: {e!r}")
 
 project = "MatEnsemble"
 copyright = "2026, Soumendu Bagchi, Kaleb Duchesneau"
