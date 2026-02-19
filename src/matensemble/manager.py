@@ -80,14 +80,16 @@ class SuperFluxManager:
         Handles logging status and updates
     status: matensemble.logging.StatusWriter()
         Writes to a status file that the user can watch to see progress updates
-    paths: matensemble.logger.WorkflowPaths()
-        Creates the output directories to in the following structure
-        <director_job_is_launched_from>/<SLURM_JOB_ID>_matensemble_workflow/
-          |-status.log
-          |-logs/
-            |-<timestamp>_matensemble_workflow.log
-          |-out/
-            |-<output_of_workflow>
+    paths: matensemble.logger.WorkflowPaths
+        Creates the output directories in the following structure::
+
+            <cwd>/<SLURM_JOB_ID>_matensemble_workflow/
+              ├── status.log
+              ├── logs/
+              │   └── <timestamp>_matensemble_workflow.log
+              └── out/
+                  └── <output_of_workflow>
+
 
     Notes
     -----
