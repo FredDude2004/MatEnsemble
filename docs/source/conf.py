@@ -46,7 +46,7 @@ napoleon_numpy_docstring = True
 
 templates_path = ["_templates"]
 exclude_patterns = []
-
+html_static_path = []
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
