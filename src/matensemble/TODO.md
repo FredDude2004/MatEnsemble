@@ -60,10 +60,10 @@
 
 **--- Build Base Images ---**
 - [x] Build Base Image for Baseline
-- [ ] Build Base Image for Frontier
-- [ ] Build Base Image for Perlmutter
-- [ ] Push images to GitHub Container Registry
-- [ ] Build MatEnsemble Images with each base image
+- [x] Build Base Image for Frontier
+- [x] Build Base Image for Perlmutter
+- [x] Push images to GitHub Container Registry
+- [x] Build MatEnsemble Images with each base image
 - [ ] Test Images on each respective system
 
 **--- Setup GitHub Actions ---**
