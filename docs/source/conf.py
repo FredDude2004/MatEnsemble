@@ -46,15 +46,11 @@ napoleon_numpy_docstring = True
 
 templates_path = ["_templates"]
 exclude_patterns = []
-html_static_path = []
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "sphinx_rtd_theme"
-html_static_path = ["_static"]
-
-
 autosummary_generate = True
 
 autodoc_default_options = {
@@ -69,15 +65,25 @@ autodoc_typehints = "description"
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 
-
 autodoc_mock_imports = [
     "flux",
     "flux.job",
     "mpi4py",
     "mpi4py.MPI",
     "lammps",
+    "numpy",
+    "pandas",
+    "torch",
+    "scipy",
+    "sklearn",
+    "matplotlib",
+    "matplotlib.pyplot",
+    "ase",
+    "pymatgen",
+    "seaborn",
     "ovito",
     "ovito.io",
     "ovito.data",
     "ovito.pipeline",
+    "redis",
 ]
