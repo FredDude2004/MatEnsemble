@@ -33,7 +33,7 @@ master = SuperFluxManager(
     task_list,
     task_command,
     write_restart_freq=5,
-    tasks_per_job=1 * np.ones((N_task, 1)),
+    tasks_per_job=1,
     cores_per_task=1,
     gpus_per_task=1,
 )
@@ -48,4 +48,4 @@ task_arg_list = list(
 
 # For multiple args per task each if the elements could be a list i.e. task_args_list = [['x0f','x14'],['xa9','xf3'],[]...]
 # finally execute the whole pool of tasks
-master.poolexecutor(task_arg_list=task_arg_list, buffer_time=1, task_dir_list=None)
+master.poolexecutor(task_arg_list=task_arg_list, buffer_time=0.1, task_dir_list=None)
