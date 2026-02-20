@@ -98,7 +98,7 @@ the manager more modular, customizable and maintainable. Right now there are
 two different strategies that MatEnsemble depends on. The TaskSubmissionStrategy
 and the FutureProcessingStrategy.
 
-.. code-blocks:: python
+.. code-block:: python
 
     class TaskSubmissionStrategy(ABC):
         @abstractmethod
@@ -117,8 +117,7 @@ The TaskSubmissionStrategy is an interface that has two required methods. This
 gives the manager the flexibility to treat different tasks according to their 
 preferences (i.e. GPU affinity or CPU affinity).
 
-.. code-blocs:: python
-
+.. code-block:: python
     class FutureProcessingStrategy(ABC):
         @abstractmethod
         def process_futures(self, buffer_time) -> None:
