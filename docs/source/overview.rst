@@ -118,6 +118,7 @@ gives the manager the flexibility to treat different tasks according to their
 preferences (i.e. GPU affinity or CPU affinity).
 
 .. code-block:: python
+
     class FutureProcessingStrategy(ABC):
         @abstractmethod
         def process_futures(self, buffer_time) -> None:
