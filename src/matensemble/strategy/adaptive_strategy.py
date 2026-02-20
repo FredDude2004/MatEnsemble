@@ -8,10 +8,12 @@ tasks as running tasks complete.
 
 import concurrent.futures
 import flux.job.executor
+import traceback
 import time
 
 from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
 from matensemble.fluxlet import Fluxlet
+from datetime import datetime
 from pathlib import Path
 
 
@@ -41,6 +43,26 @@ class AdaptiveStrategy(FutureProcessingStrategy):
         self.manager = manager
         self.task_arg_list = task_arg_list
         self.task_dir_list = task_dir_list
+
+    def append_text(self, path: Path, text: str) -> None:
+        """
+        Used for writing error messages to stderr on a specifig task
+
+        Parameters
+        ----------
+        path: Path
+            The path to the file to be written to
+        text: str
+            The text to write to the file
+
+        Return
+        ------
+        None
+        """
+
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(text)
 
     def submit(
         self, task, tasks_per_job, task_args, task_dir
@@ -155,11 +177,43 @@ class AdaptiveStrategy(FutureProcessingStrategy):
 
             try:
                 return_code = fut.result()  # raises if the task submission/run failed
-            except Exception:
+            except Exception as e:
+                tb = traceback.format_exc()
+                stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                self.append_text(
+                    stderr,
+                    (
+                        f"\n\n===== MATENSEMBLE WRAPPER ERROR ({stamp}) =====\n"
+                        f"task={task}\n"
+                        f"workdir={workdir}\n"
+                        f"exception={repr(e)}\n"
+                        f"{tb}\n"
+                    ),
+                )
+
                 self.manager.failed_tasks.append((task, fut.job_spec))
                 self.manager.logger.exception(
                     "TASK FAILED: task=%s | workdir=%s | stdout=%s | stderr=%s",
                     task,
+                    workdir,
+                    stdout,
+                    stderr,
+                )
+                continue
+
+            if return_code != 0:
+                self.append_text(
+                    stderr,
+                    f"\n\n===== MATENSEMBLE: NONZERO EXIT =====\n"
+                    f"task={task} rc={return_code}\n"
+                    f"See workflow log for details: {self.manager.paths.verbose_log_file}\n",
+                )
+                self.manager.failed_tasks.append((task, fut.job_spec))
+                self.manager.logger.error(
+                    "TASK NONZERO EXIT: task=%s rc=%s | workdir=%s | stdout=%s | stderr=%s",
+                    task,
+                    return_code,
                     workdir,
                     stdout,
                     stderr,

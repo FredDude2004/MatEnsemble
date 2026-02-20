@@ -7,8 +7,6 @@ on:
     paths:
       - "containers/**"
       - "src/**"
-      - "pyproject.toml"
-      - "uv.lock"
       - ".github/workflows/dev-containers.yaml"
 
 permissions:

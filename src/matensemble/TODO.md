@@ -68,8 +68,8 @@
 - [ ] NOTE: Come back later -- Test Perlmutter Image
 
 **--- Setup GitHub Actions ---**
-- [ ] Setup Matrix build action to build MatEnsemble images for baseline, frontier, and perlmutter and push them to ghcr
-- [ ] Setup action to build with uv and publish with uv 
+- [x] Setup Matrix build action to build MatEnsemble images for baseline, frontier, and perlmutter and push them to ghcr
+- [x] Setup action to build with uv and publish with uv 
 - [x] Setup action to build docs and publish them
 
 **--- Test CI/CD ---**

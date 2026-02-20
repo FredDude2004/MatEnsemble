@@ -58,7 +58,9 @@ def job_id() -> str:
         The SLURM_JOB_ID environment variable or the process ID
     """
 
-    return os.environ.get("SLURM_JOB_ID") or f"local-{os.getpid()}"
+    return os.environ.get("SLURM_JOB_ID") or datetime.now().strftime(
+        "%_Y-%m-%d_%H-%M-%S"
+    )
 
 
 def timestamp_for_filename() -> str:
@@ -199,7 +201,7 @@ def create_workflow_paths(base_dir: str | Path | None = None) -> WorkflowPaths:
 
     base_dir = Path(base_dir) if base_dir is not None else Path.cwd()
 
-    workflow_dir = base_dir / f"{job_id()}_matensemble_workflow"
+    workflow_dir = base_dir / f"matensemble_workflow{job_id()}"
     logs_dir = workflow_dir / "logs"
     out_dir = workflow_dir / "out"
     status_file = workflow_dir / "status.log"
