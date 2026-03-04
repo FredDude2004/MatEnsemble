@@ -16,17 +16,18 @@ To see about implementing your own strategies look at the strategy/ sub-package
 
 """
 
-import numpy as np
-import flux.job
-import os.path
-import logging
-import numbers
-import pickle
+import threading
 import time
-import flux
-import copy
+import pickle
 import sys
 import os
+import numbers
+
+import uvicorn
+import numpy as np
+import flux.job
+import flux
+import copy
 
 from matensemble.strategy.process_futures_strategy_base import FutureProcessingStrategy
 from matensemble.strategy.submission_strategy_base import TaskSubmissionStrategy
@@ -36,8 +37,8 @@ from matensemble.strategy.gpu_affine_strategy import GPUAffineStrategy
 from matensemble.strategy.adaptive_strategy import AdaptiveStrategy
 from matensemble.strategy.dynopro_strategy import DynoproStrategy
 from matensemble.logger import setup_workflow_logging
+from matensemble.dashboard_server import create_app
 from collections import deque
-from datetime import datetime
 
 __author__ = ["Soumendu Bagchi", "Kaleb Duchesneau"]
 __package__ = "matensemble"
@@ -164,7 +165,10 @@ class SuperFluxManager:
         self.gen_task_cmd = gen_task_cmd
         self.write_restart_freq = write_restart_freq
 
-        self.logger, self.status, self.paths = setup_workflow_logging()
+        allocation_information = self.get_nnodes()
+        self.logger, self.status, self.paths = setup_workflow_logging(
+            allocation_information
+        )
         self.load_restart(restart_filename)
 
     def load_restart(self, filename: str | None = None) -> None:
@@ -216,6 +220,29 @@ class SuperFluxManager:
             open(f"restart_{len(self.completed_tasks)}.dat", "wb"),
         )
 
+    def get_nnodes(self) -> tuple:
+        """
+        Gets the total number of nodes (minus one for the flux broker) and the
+        number of cores and gpus per node.
+
+        Return
+        ------
+        tuple
+            Each of the computed values (nnodes, cores_per_node, gpus_per_node)
+        """
+
+        rpc = flux.resource.list.resource_list(self.flux_handle)
+        resources = rpc.get()
+
+        nnodes = len(resources.all.ranks)
+        total_cores = resources.all.ncores
+        total_gpus = resources.all.ngpus
+
+        cores_per_node = total_cores // nnodes
+        gpus_per_node = total_gpus // nnodes
+
+        return (nnodes - 1, cores_per_node, gpus_per_node)
+
     def check_resources(self) -> None:
         """
         Gets the available resources from Flux's Remote Procedure Call (RPC)
@@ -225,13 +252,11 @@ class SuperFluxManager:
         None
         """
 
-        self.resource_status = flux.resource.status.ResourceStatusRPC(
-            self.flux_handle
-        ).get()
-        self.resource_list = flux.resource.list.resource_list(self.flux_handle).get()
-        self.resource = flux.resource.list.resource_list(self.flux_handle).get()
-        self.free_gpus = self.resource.free.ngpus
-        self.free_cores = self.resource.free.ncores
+        rpc = flux.resource.list.resource_list(self.flux_handle)
+        resources = rpc.get()
+
+        self.free_cores = resources.free.ncores
+        self.free_gpus = resources.free.ngpus
         self.free_excess_cores = self.free_cores - self.free_gpus
 
     def log_progress(self) -> None:
@@ -263,6 +288,20 @@ class SuperFluxManager:
             self.free_gpus,
         )
 
+    def setup_dashboard(self) -> None:
+        path_to_status = self.status.path
+
+        app = create_app(path_to_status)
+
+        thread = threading.Thread(
+            target=uvicorn.run,
+            args=(app,),
+            kwargs={"host": "0.0.0.0", "port": 8000, "log_level": "warning"},
+            daemon=True,
+        )
+
+        thread.start()
+
     def poolexecutor(
         self,
         task_arg_list: list[int | str],
@@ -270,6 +309,7 @@ class SuperFluxManager:
         task_dir_list: list[str] | None = None,
         adaptive: bool = True,
         dynopro: bool = False,
+        dashboard: bool = False,
         submis_strat: TaskSubmissionStrategy | None = None,
         fut_proc_strat: FutureProcessingStrategy | None = None,
     ) -> None:
@@ -325,6 +365,11 @@ class SuperFluxManager:
         None
 
         """
+
+        # TODO: Setup the server here
+        if dashboard:
+            pass
+            # self.setup_dashboard()
 
         # use double ended-queue and popleft for O(1) time complexity off front of lists
         gen_task_arg_list = deque(copy.copy(task_arg_list))
