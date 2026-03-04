@@ -16,7 +16,7 @@ task_command = os.path.abspath("mpi_helloworld.py")
 
 # Constant tasks_per_job for every task (match original behavior)
 # (Use 56 if you want the same as your earlier benchmark)
-TASKS_PER_JOB = 50
+TASKS_PER_JOB = 10
 tasks_per_job = TASKS_PER_JOB * np.ones(N_task, dtype=int)
 
 master = SuperFluxManager(
@@ -33,7 +33,9 @@ task_arg_list = list(range(1, N_task + 1))
 
 # Run
 start_time = time.perf_counter()
-master.poolexecutor(task_arg_list=task_arg_list, buffer_time=0.1, task_dir_list=None)
+master.poolexecutor(
+    task_arg_list=task_arg_list, buffer_time=0.1, task_dir_list=None, dashboard=True
+)
 end_time = time.perf_counter()
 
 elapsed_time = end_time - start_time
