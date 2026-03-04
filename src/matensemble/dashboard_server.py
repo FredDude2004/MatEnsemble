@@ -1,6 +1,7 @@
 import json
 import pathlib
 
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -27,6 +28,8 @@ def create_app(status_file: str) -> FastAPI:
                 "freeGpus": 0,
             }
 
-    app.mount("/", StaticFiles(directory="dist", html=True), name="static")
+    BASE_DIR = Path(__file__).resolve().parent
+    DIST_DIR = BASE_DIR / "dist"
+    app.mount("/", StaticFiles(directory=DIST_DIR, html=True), name="static")
 
     return app

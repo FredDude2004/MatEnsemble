@@ -368,8 +368,7 @@ class SuperFluxManager:
 
         # TODO: Setup the server here
         if dashboard:
-            pass
-            # self.setup_dashboard()
+            self.setup_dashboard()
 
         # use double ended-queue and popleft for O(1) time complexity off front of lists
         gen_task_arg_list = deque(copy.copy(task_arg_list))
