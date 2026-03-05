@@ -29,7 +29,7 @@ def create_app(status_file: str) -> FastAPI:
             }
 
     BASE_DIR = Path(__file__).resolve().parent
-    DIST_DIR = BASE_DIR / "dist"
+    DIST_DIR = BASE_DIR / "dash"
     app.mount("/", StaticFiles(directory=DIST_DIR, html=True), name="static")
 
     return app
