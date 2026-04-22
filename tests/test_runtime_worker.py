@@ -90,7 +90,9 @@ def test_main_executes_chore_resolves_dependencies_and_writes_outputs(
         func_module="user_tasks",
         func_qualname="add_one",
         deps=("chore-make-0001",),
-        args=(__import__("matensemble").OutputReference("chore-make-0001"),),
+        args=(
+            __import__("matensemble").OutputReference("chore-make-0001", dep_dir),
+        ),
         kwargs={"y": 5},
     )
 

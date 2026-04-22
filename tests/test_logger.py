@@ -45,7 +45,8 @@ def test_setup_logger_clears_duplicate_handlers_and_writes_log(tmp_path, capsys)
     assert len(second.handlers) == 1
 
     captured = capsys.readouterr()
-    assert "Status file:" in captured.err
+    assert "Logs:" in captured.err
+    assert "Outputs:" in captured.err
 
     log_text = (tmp_path / "matensemble_workflow.log").read_text()
     assert "Workflow initialized" in log_text

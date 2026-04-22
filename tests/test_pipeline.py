@@ -55,7 +55,7 @@ def test_chore_decorator_builds_python_chore_and_output_reference(tmp_path):
     )(top_level_add)
 
     ref = wrapped(4, y=5)
-    assert ref == OutputReference("chore-add-0001")
+    assert ref == OutputReference("chore-add-0001", pipe._chore_list[0].workdir)
     assert len(pipe._chore_list) == 1
 
     chore = pipe._chore_list[0]
@@ -191,6 +191,7 @@ def test_submit_builds_sorted_chore_list_and_calls_manager(monkeypatch, tmp_path
     assert DummyManager.created["set_gpu_affinity"] is True
     assert DummyManager.run_args == {
         "buffer_time": 0.25,
+        "log_delay": 5.0,
         "adaptive": False,
         "dynopro": True,
         "processing_strategy": "sentinel",

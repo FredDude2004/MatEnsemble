@@ -29,10 +29,11 @@ class Node:
 
 
 def test_json_safe_handles_paths_enums_and_output_references():
+    chore_dir = Path("workflow/out/chore-1")
     value = {
         "path": Path("abc"),
         "chore_type": ChoreType.PYTHON,
-        "ref": OutputReference("chore-1"),
+        "ref": OutputReference("chore-1", chore_dir),
         "nested": (1, {2, 3}),
     }
     safe = _json_safe(value)
@@ -45,8 +46,8 @@ def test_json_safe_handles_paths_enums_and_output_references():
 
 
 def test_find_refs_walks_nested_containers_and_dataclasses_once():
-    ref1 = OutputReference("chore-a")
-    ref2 = OutputReference("chore-b")
+    ref1 = OutputReference("chore-a", Path("out/chore-a"))
+    ref2 = OutputReference("chore-b", Path("out/chore-b"))
     payload = Payload(value=[ref1, {"x": ref2}], extra=(ref1,))
     node = Node()
     node.items.append(payload)
@@ -57,16 +58,21 @@ def test_find_refs_walks_nested_containers_and_dataclasses_once():
 
 
 def test_collect_dep_ids_preserves_first_seen_order_and_uniqueness():
-    ref1 = OutputReference("chore-a")
-    ref2 = OutputReference("chore-b")
+    ref1 = OutputReference("chore-a", Path("out/chore-a"))
+    ref2 = OutputReference("chore-b", Path("out/chore-b"))
     deps = _collect_dep_ids(([ref1, ref2, ref1],), {"x": {"y": ref2}})
     assert deps == ("chore-a", "chore-b")
 
 
 def test_resolve_output_references_preserves_shape():
     value = Payload(
-        value={OutputReference("chore-a"): [OutputReference("chore-b"), 9]},
-        extra=frozenset({OutputReference("chore-b")}),
+        value={
+            OutputReference("chore-a", Path("out/chore-a")): [
+                OutputReference("chore-b", Path("out/chore-b")),
+                9,
+            ]
+        },
+        extra=frozenset({OutputReference("chore-b", Path("out/chore-b"))}),
     )
     resolved = _resolve_output_references(
         value, {"chore-a": "left", "chore-b": "right"}
@@ -79,4 +85,4 @@ def test_resolve_output_references_preserves_shape():
 
 def test_resolve_output_references_raises_for_missing_dependency():
     with pytest.raises(KeyError, match="Missing dependency result"):
-        _resolve_output_references(OutputReference("missing"), {})
+        _resolve_output_references(OutputReference("missing", Path("out/missing")), {})

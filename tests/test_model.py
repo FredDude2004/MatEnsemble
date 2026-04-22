@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import pytest
+from pathlib import Path
 
 from matensemble.model import ChoreType, OutputReference, Resources
 
 
 def test_output_reference_is_frozen_and_holds_chore_id():
-    ref = OutputReference("chore-1")
+    ref = OutputReference("chore-1", Path("/tmp/chore-1"))
     assert ref.chore_id == "chore-1"
+    assert ref.workdir == Path("/tmp/chore-1")
 
 
 @pytest.mark.parametrize(
