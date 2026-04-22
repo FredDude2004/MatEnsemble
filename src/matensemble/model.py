@@ -1,3 +1,6 @@
+import pickle
+
+from pathlib import Path
 from dataclasses import dataclass
 from enum import StrEnum, auto
 
@@ -5,10 +8,23 @@ from enum import StrEnum, auto
 @dataclass(frozen=True)
 class OutputReference:
     """
-    An object to encapsulate the result of a chore as the input to another chore
+    An object to encapsulate the result of a chore as the input to another chore.
     """
 
     chore_id: str
+    workdir: Path
+
+    def __str__(self) -> str:
+        """
+        Return the deserialized result of the referenced chore as a string.
+        """
+        # TODO: Make sure that this file exists and add some exception handling
+        dep_result = self.workdir / "result.pkl"
+        try:
+            with dep_result.open("rb") as f:
+                return str(pickle.load(f))
+        except Exception as e:
+            return f"Error: Could not open result of chore: {self.chore_id} becuase of the following exception: {e}"
 
 
 @dataclass

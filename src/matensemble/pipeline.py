@@ -5,6 +5,7 @@ import functools
 import datetime
 import sys
 
+import cloudpickle
 import networkx as nx
 
 from typing import Callable, Any
@@ -138,11 +139,6 @@ class Pipeline:
         def decorator(func: Callable[..., Any]) -> Callable[..., OutputReference]:
             @functools.wraps(func)
             def wrapper(*args: Any, **kwargs: Any) -> OutputReference:
-                if "<locals>" in func.__qualname__:
-                    raise ValueError(
-                        "MatEnsemble chores must wrap importable top-level callables, not nested/local functions."
-                    )
-
                 self._counter += 1
 
                 source_root = str(self._base_dir.parent.resolve())
@@ -183,20 +179,29 @@ class Pipeline:
                     str(spec_file),
                 ]
 
+                needs_serialization = (
+                    func.__module__ == "__main__" or "<locals>" in func.__qualname__
+                )
+
+                serialized_callable = (
+                    cloudpickle.dumps(func) if needs_serialization else None
+                )
+
                 chore = Chore(
                     id=chore_id,
                     command=cmd,
                     chore_type=ChoreType.PYTHON,
                     resources=res,
                     workdir=workdir,
-                    func_module=func.__module__,
-                    func_qualname=func.__qualname__,
+                    func_module=None if needs_serialization else func.__module__,
+                    func_qualname=None if needs_serialization else func.__qualname__,
+                    serialized_callable=serialized_callable,
                     deps=deps,
                     args=copy.deepcopy(args),
                     kwargs=copy.deepcopy(kwargs),
                 )
                 self._chore_list.append(chore)
-                return OutputReference(chore_id)
+                return OutputReference(chore_id, workdir)
 
             return wrapper
 
@@ -335,6 +340,7 @@ class Pipeline:
         self,
         write_restart_freq: int | None = 100,
         buffer_time: float = 1.0,
+        log_delay: float = 5.0,
         set_cpu_affinity: bool = True,
         set_gpu_affinity: bool = False,
         adaptive: bool = True,
@@ -356,6 +362,8 @@ class Pipeline:
         buffer_time : float
             The amount of seconds that the :obj:`FluxManager` should wait between
             submission of chores, defaults to 1.0s.
+        log_delay : float
+            The amount delay is seconds between the writing of logs 
         set_cpu_affinity : bool
             Whether CPU affinity should be set for flux jobspecs, defaults to True.
         set_gpu_affinity : bool
@@ -390,6 +398,7 @@ class Pipeline:
         )
         manager.run(
             buffer_time=buffer_time,
+            log_delay=log_delay,
             adaptive=adaptive,
             dynopro=dynopro,
             processing_strategy=processing_strategy,
