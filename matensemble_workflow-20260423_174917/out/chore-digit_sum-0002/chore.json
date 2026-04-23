@@ -1,0 +1,37 @@
+{
+  "id": "chore-digit_sum-0002",
+  "command": [
+    "/opt/basic/bin/python",
+    "-m",
+    "matensemble.runtime_worker",
+    "--chore-id",
+    "chore-digit_sum-0002",
+    "--spec-file",
+    "/workspaces/MatEnsemble/matensemble_workflow-20260423_174917/out/chore-digit_sum-0002/chore.pkl"
+  ],
+  "chore_type": "PYTHON",
+  "resources": {
+    "num_tasks": 1,
+    "cores_per_task": 1,
+    "gpus_per_task": 0,
+    "mpi": false,
+    "env": {
+      "PYTHONPATH": "/workspaces/MatEnsemble"
+    },
+    "inherit_env": true
+  },
+  "spec_file": "/workspaces/MatEnsemble/matensemble_workflow-20260423_174917/out/chore-digit_sum-0002/chore.pkl",
+  "func_module": null,
+  "func_qualname": null,
+  "has_serialized_callable": true,
+  "deps": [
+    "chore-factorial-0001"
+  ],
+  "args": [
+    {
+      "__type__": "OutputReference",
+      "chore_id": "chore-factorial-0001"
+    }
+  ],
+  "kwargs": {}
+}
