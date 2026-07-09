@@ -10,9 +10,8 @@ Install on an HPC login node
 ============================
 
 Currently the MCP server is only targeted at the Frontier, Pathfinder and Perlmutter
-HPC systems. To install the server you can use our script. Before running the install
-script make sure the $SCRATCH environment variable is set or navigate to a location
-that would like your workflows to live.
+HPC systems. To install the server you can use our script. The installer will prompt
+you for the directory where the MatEnsemble workspace should be created.
 
 .. code-block:: bash
 
@@ -43,7 +42,7 @@ Once you have one of these tools installed you can then start using the MatEnsem
 .. code-block:: bash
 
    # navigate to the campaigns directory
-   cd $SCRATCH/MatEnsemble/matensemble_campaigns
+   cd /path/to/install/MatEnsemble/matensemble_campaigns
 
    # start the LLM with the CLI tool
    <claude, codex, copilot or gemini>

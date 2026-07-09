@@ -66,19 +66,7 @@ choose_system() {
 
 choose_base() {
 	local path
-	if [[ -n "${SCRATCH:-}" ]]; then
-		if prompt_yes_no "Install MatEnsemble in \$SCRATCH (${SCRATCH})? [Y/n] " "Y"; then
-			echo "$SCRATCH"
-			return
-		fi
-	else
-		if prompt_yes_no "SCRATCH environment variable is not set. Install MatEnsemble in \$PWD (${PWD})? [y/N] " "N"; then
-			echo "$PWD"
-			return
-		fi
-	fi
-
-	path="$(prompt_read "Provide path to install MatEnsemble: ")"
+	path="$(prompt_read "Where should MatEnsemble be installed? ")"
 	[[ -n "$path" ]] || err "install path is required"
 	echo "$path"
 }

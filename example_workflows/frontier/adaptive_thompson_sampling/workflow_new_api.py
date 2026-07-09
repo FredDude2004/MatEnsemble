@@ -308,6 +308,11 @@ def thompson_next(result):
         if open_for_generation:
             rng = _random.Random(state["seed"] + 999 + state["completed_evals"] * 7919)
             candidate = generate_candidate(state, rng)
+            cost = max(0.05, float(candidate["expected_wall_s"]))
+            stats = state["arm_stats"][str(int(candidate["arm"]))]
+            posterior_mean = float(stats["mean"])
+            priority = posterior_mean / (cost ** state["cost_power"])
+            nice = max(-1000, min(1000, int(-10.0 * priority)))
             write_event(
                 {
                     "event": "generate",
@@ -317,6 +322,7 @@ def thompson_next(result):
                     "expected_wall_s": candidate["expected_wall_s"],
                     "generated_total": state["next_candidate_id"],
                     "target_wall_s": state["target_wall_s"],
+                    "nice": nice,
                 },
                 state,
             )
@@ -332,6 +338,7 @@ def thompson_next(result):
                     inherit_env=True,
                 ),
                 qualname="rastrigin-eval",
+                nice=nice,
             )
 
         state_path.write_text(_json.dumps(state, indent=2))
@@ -471,7 +478,13 @@ os.environ["MATENSEMBLE_TS_STATE"] = str(STATE_PATH)
 os.environ["MATENSEMBLE_TS_TRACE"] = str(TRACE_PATH)
 
 for candidate in build_candidates(initial_count, ARM_GRID, SEED):
-    evaluate_candidate(candidate, NOISE, SEED)
+    pipe.call(
+        "rastrigin-eval",
+        candidate,
+        NOISE,
+        SEED,
+        queue_nice=max(-1000, min(1000, int(10.0 * candidate["expected_wall_s"]))),
+    )
 
 t0 = time.perf_counter()
 future = pipe.submit(
