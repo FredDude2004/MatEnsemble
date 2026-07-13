@@ -71,8 +71,9 @@ a Python chore if you need DAG edges.
 
 ``adaptive`` (default ``True``)
     If true (and no custom ``processing_strategy`` is given), use :class:`~matensemble.strategy.AdaptiveStrategy`
-    so newly ready chores can be submitted inside the completion loop. If false, :class:`~matensemble.strategy.NonAdaptiveStrategy`
-    only drains futures.
+    so a completion refreshes available Flux resources and newly ready chores can be submitted inside the
+    completion loop. If false, :class:`~matensemble.strategy.NonAdaptiveStrategy` waits for the entire current
+    wave of running chores to finish before the manager submits another wave.
 
 ``dynopro``
     Reserved flag threaded through to :meth:`~matensemble.manager.FluxManager.run` for whole-node dynopro

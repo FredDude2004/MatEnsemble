@@ -168,52 +168,49 @@ MatEnsemble also supports user-defined strategies. These strategies can inspect 
 
 User-defined strategies allow workflows to expand dynamically during runtime. A strategy may inspect the result of a completed chore and return a `matensemble.chore.ChoreSpec` describing new work to be added to the workflow. The new chore is validated, inserted into the dependency graph, and scheduled like any other task.
 
-The example below implements a simple binary search. Each completed `guess` chore produces a result that is examined by a user-defined strategy. To attach chores to a strategy by adding their name to the `BOLO List`. This will tell the manager to Be On the Look-Out (BOLO) for this chore, if it sees it then it will spawn the strategy and pass the results from the chore to the strategy. Based on that result, the strategy generates another `guess` chore until the target value is found.
+Here is a small template for how you can create a strategy. To attach registered functions to a strategy simply add the chore name to the `BOLO List`. This will tell the manager to Be On the Look-Out (BOLO) for any chores that are calling this registered function. If it sees one complete then it will spawn the strategy and pass the results from the chore to the strategy. Based on that result, the strategy generates another can tell the manager to spawn another Chore calling any registered function.
 
 ```python
-@pipe.chore()
-def guess(lower: int, upper: int, guess_num: int = 1) -> dict:
+pipe = Pipeline()
+
+md_resources = dict(num_tasks=128, cores_per_task=1, gpus_per_task=4, mpi=True)
+analysis_resources = dict(num_tasks=1, cores_per_task=8)
+
+
+@pipe.chore(name="simulate", **md_resources)
+def simulate(candidate):
+    # Run LAMMPS, DFT, phase-field, or another science application here.
+    return {"trajectory": "traj.dump", "candidate": candidate}
+
+
+@pipe.chore(name="score", **analysis_resources)
+def score(simulation):
+    # Analyze the completed simulation and propose the next high-value sample.
     return {
-        "guess": ((lower + upper) // 2),
-        "low": lower,
-        "high": upper,
-        "num_guesses": guess_num,
+        "uncertainty": 0.18,
+        "next_candidate": {"temperature": 1750, "composition": "SiO2"},
     }
 
-answer = random.randint(1, 100)
 
-@pipe.strategy(bolo_list=["guess"])
-def higher_or_lower(guess_result):
+@pipe.strategy(bolo_list=["score"], **analysis_resources)
+def adapt(report):
+    if report["uncertainty"] < 0.05:
+        return None
 
-    if guess_result["guess"] == answer:
-        print(
-            f"Good Job! I was thinking of {answer}, "
-            f"and you got it in {guess_result['num_guesses']}"
-        )
+    return ChoreSpec(
+        args=(report["next_candidate"],),
+        kwargs={},
+        resources=Resources(**md_resources),
+        qualname="simulate",
+    )
 
-    elif guess_result["guess"] < answer:
-        return ChoreSpec(
-            args=(
-                guess_result["guess"] + 1,
-                guess_result["high"],
-                guess_result["num_guesses"] + 1,
-            ),
-            kwargs=None,
-            resources=Resources(),
-            qualname="guess",
-        )
 
-    else:
-        return ChoreSpec(
-            args=(
-                guess_result["low"],
-                guess_result["guess"] - 1,
-                guess_result["num_guesses"] + 1,
-            ),
-            kwargs=None,
-            resources=Resources(),
-            qualname="guess",
-        )
+seed = {"temperature": 1600, "composition": "SiO2"}
+trajectory = simulate(seed)
+score(trajectory)  # OutputReference creates the simulate -> score DAG edge.
+
+future = pipe.submit(log_delay=10)
+results = future.result()
 ```
 
 This mechanism allows MatEnsemble workflows to adapt their execution path based on intermediate results rather than requiring the entire workflow graph to be known before execution begins.

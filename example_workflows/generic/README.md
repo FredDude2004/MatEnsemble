@@ -16,6 +16,7 @@ Available examples:
 - `dependencies`: dependency-aware Python chores using `OutputReference`.
 - `executable`: external command chores through `Pipeline.exec`.
 - `mpi`: portable MPI-enabled Python chores.
+- `high_throughput`: a deep asynchronous backlog of heterogeneous-duration chores.
 - `strategy`: adaptive `ChoreSpec` spawning.
 - `lammps_adaptive`: a tiny LAMMPS Python-module campaign with adaptive validation.
 

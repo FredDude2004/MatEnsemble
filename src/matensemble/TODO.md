@@ -263,8 +263,8 @@
 - [x] Tell Soumendu about how we could use the chores and LLMs `~/Desktop/scratch/MatEnsemble/llm_example.md`
 - [x] Add a util function to turn the DAG into a photo
 - [x] Fix the MCP errors with launching the dashboard
+- [x] Take a look at Maestro
 - [ ] Update the Figures in JOSS paper to be much bigger.
-- [ ] Take a look at Maestro
 - [ ] Make a demo comparing the other workflow managers to MatEnsemble (JobFlow, Parsl, libEnsemble, RADICAL-plot, scheduler from scratch)
       - does it converge?
       - how many workers did it use?

@@ -105,13 +105,15 @@ tree when logging initializes.
 Adaptive vs. non-adaptive scheduling
 =====================================
 
-In **adaptive** mode (the default), completing a chore can **immediately** trigger more submissions in the same
-super-loop iteration via :meth:`~matensemble.manager.FluxManager._submit_until_ooresources`, keeping the
-allocation saturated when a backlog exists.
+In **adaptive** mode (the default), completed futures trigger an immediate Flux resource refresh and can cause
+more submissions in the same super-loop iteration via
+:meth:`~matensemble.manager.FluxManager._submit_until_ooresources`, keeping the allocation saturated when a
+backlog exists.
 
-In **non-adaptive** mode, the manager only submits during the initial "fill until out of resources" phases;
-completion handling updates the DAG but **does not** proactively pull additional ready chores until the next
-outer-loop scheduling opportunity: use this when tighter control or simpler resource snapshots are desired.
+In **non-adaptive** mode, each "fill until out of resources" phase forms a wave. Completion handling waits for
+every running chore in that wave to finish before returning to the outer loop and submitting the next wave.
+With heterogeneous chore walltimes, slots that finish early therefore remain idle until the slowest chore in
+their wave completes. This mode is useful as a static wave-scheduling baseline.
 
 .. image:: ../../media/chain_v_adaptive_scheduling.png
    :alt: Diagram contrasting static batching with adaptive back-filling of tasks

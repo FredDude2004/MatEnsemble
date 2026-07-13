@@ -63,6 +63,11 @@ class AdaptiveStrategy(FutureProcessingStrategy):
         completed, self.manager._futures = concurrent.futures.wait(
             self.manager._futures, timeout=buffer_time
         )
+        if completed:
+            # Reconcile with Flux before immediate backfilling. Incrementing
+            # local counters here could double-count resources already observed
+            # as free by an outer-loop resource query.
+            self.manager._check_resources()
 
         had_failure = False
         for fut in completed:
@@ -147,16 +152,21 @@ class AdaptiveStrategy(FutureProcessingStrategy):
 
 class NonAdaptiveStrategy(FutureProcessingStrategy):
     """
-    An implementation of the :obj:`FutureProcessingStrategy` which will not adaptively
-    submit new :obj:`Chore`'s as incoming chores are completed.
+    Process chores in discrete waves.
+
+    All futures submitted in the current wave are allowed to finish before
+    their newly ready dependents, or any remaining ready chores, can be
+    submitted by the manager's next outer-loop iteration.
     """
 
     def __init__(self, manager) -> None:
         super().__init__(manager)
 
     def process_futures(self, buffer_time) -> None:
+        # Deliberately omit a timeout: non-adaptive scheduling drains the whole
+        # current wave before returning control to the manager's submit phase.
         completed, self.manager._futures = concurrent.futures.wait(
-            self.manager._futures, timeout=buffer_time
+            self.manager._futures
         )
 
         had_failure = False
@@ -253,6 +263,8 @@ class UserStrategy(FutureProcessingStrategy):
         completed, self.manager._futures = concurrent.futures.wait(
             self.manager._futures, timeout=buffer_time
         )
+        if completed:
+            self.manager._check_resources()
 
         had_failure = False
         for fut in completed:

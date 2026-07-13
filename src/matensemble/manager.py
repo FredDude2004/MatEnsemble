@@ -593,6 +593,11 @@ class FluxManager:
 
         Notes
         -----
+        In adaptive mode, completed futures trigger a fresh Flux resource query
+        and can cause immediate backfilling before the next outer loop iteration.
+        In non-adaptive mode, completion processing waits for the entire currently
+        running wave before the outer loop submits another.
+
         Each loop iteration:
 
         #. Refreshes available resources

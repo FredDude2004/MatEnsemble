@@ -36,3 +36,15 @@ I also want information about how `MatEnsemble` ran the workflow
 - how well resources were utilized
 
 if that is possible.
+
+---
+
+Took 2m 38s
+
+507 Lines of code
+
+=== ADAPTIVE THOMPSON SAMPLING SUMMARY (NEW API) ===
+evaluations: 768
+best candidate=323 x=(-0.015, -0.034) objective=0.2572 wall=2.34s
+results: adaptive_ts_results_new_api.json adaptive_ts_results_new_api.csv
+workflow elapsed: 87.13 s

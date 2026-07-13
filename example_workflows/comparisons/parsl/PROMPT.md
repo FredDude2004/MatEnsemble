@@ -1,5 +1,3 @@
-Thought for 3m 57s
-
 I am on the Frontier super computer and want to run some calculations.
 
 Create an workflow with `Parsl` that reproduces this adaptive scientific campaign.
@@ -38,3 +36,22 @@ I also want information about how `Parsl` ran the workflow
 - how well resources were utilized
 
 if that is possible.
+
+---
+
+Thought for 3m 57s
+722 Lines of code
+
+submitted at 1:48pm
+
+Failed first submission because there was a type error between the parsl apps
+codex is fixing and launching again
+
+tasks_scheduled: 128
+  tasks_completed: 128
+  tasks_failed: 0
+  driver_wall_s: 94.62
+  best_objective: 5.601578291204709
+  best_x: -0.06512694154789944
+  best_y: 1.9266612597058428
+
