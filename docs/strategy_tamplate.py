@@ -1,3 +1,4 @@
+from matensemble import chore
 from matensemble.pipeline import Pipeline
 from matensemble.model import Resources
 from matensemble.chore import ChoreSpec
@@ -42,3 +43,19 @@ score(trajectory)  # OutputReference creates the simulate -> score DAG edge.
 
 future = pipe.submit(log_delay=10)
 results = future.result()
+
+
+
+
+@chore
+def hello_world():
+    print("Hello, World!")
+
+
+
+
+
+
+
+
+

@@ -265,6 +265,11 @@
 - [x] Fix the MCP errors with launching the dashboard
 - [x] Take a look at Maestro
 - [ ] Update the Figures in JOSS paper to be much bigger.
+- [ ] Make an install of MatEnsemble that can run on linux with the install script (maybe with conda)
+- [ ] Really polish the MatEnsemble install documentation and MCP stuff
+- [ ] Follow the documentation from scratch make sure there are no rough edges
+
+## --- Comparisons ---
 - [ ] Make a demo comparing the other workflow managers to MatEnsemble (JobFlow, Parsl, libEnsemble, RADICAL-plot, scheduler from scratch)
       - does it converge?
       - how many workers did it use?
