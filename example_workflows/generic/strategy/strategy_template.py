@@ -38,7 +38,9 @@ def adapt(report):
 
 seed = {"temperature": 1600, "composition": "SiO2"}
 trajectory = simulate(seed)
-score(trajectory)  # OutputReference creates the simulate -> score DAG edge.
+
+# OutputReference creates the simulate -> score DAG edge.
+score(trajectory)
 
 future = pipe.submit(log_delay=10)
 results = future.result()
